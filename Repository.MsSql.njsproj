@@ -51,9 +51,9 @@
     <Content Include="tsconfig.json" />
     <Content Include="typings.json" />
     <TypeScriptCompile Include="index.ts" />
-    <TypeScriptCompile Include="src\connection.ts" />
-    <TypeScriptCompile Include="src\queryrecordset.ts" />
-    <TypeScriptCompile Include="src\querystream.ts" />
+    <TypeScriptCompile Include="lib\connection.ts" />
+    <TypeScriptCompile Include="lib\queryrecordset.ts" />
+    <TypeScriptCompile Include="lib\querystream.ts" />
     <TypeScriptCompile Include="test\mssql_queryrecordset.ts">
       <SubType>Code</SubType>
       <TestFramework>Mocha</TestFramework>
@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="test\" />
-    <Folder Include="src\" />
+    <Folder Include="lib\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

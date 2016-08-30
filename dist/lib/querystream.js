@@ -1,7 +1,8 @@
 "use strict";
 const MsSql = require('mssql');
-const tfso_repository_1 = require('tfso-repository');
-class QueryStream extends tfso_repository_1.Query {
+const query_1 = require('tfso-repository/lib/repository/db/query');
+const recordset_1 = require('tfso-repository/lib/repository/db/recordset');
+class QueryStream extends query_1.Query {
     constructor(connection) {
         super();
         if (connection != null)
@@ -47,7 +48,7 @@ class QueryStream extends tfso_repository_1.Query {
                 if (error != null)
                     reject(error);
                 else
-                    resolve(new tfso_repository_1.RecordSet(records, affected, (Date.now() - timed)));
+                    resolve(new recordset_1.RecordSet(records, affected, (Date.now() - timed)));
             });
             timed = Date.now();
             request.query(this.commandText);

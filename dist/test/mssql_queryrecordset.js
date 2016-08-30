@@ -1,5 +1,5 @@
 "use strict";
-const queryrecordset_1 = require('./../src/queryrecordset');
+const queryrecordset_1 = require('./../lib/queryrecordset');
 describe("When using QueryTemplate for MsSql queries", () => {
     var myQuery;
     beforeEach(() => {

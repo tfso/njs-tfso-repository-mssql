@@ -1,5 +1,6 @@
 import * as MsSql from 'mssql';
-import { Query, IRecordSet } from 'tfso-repository';
+import { Query } from 'tfso-repository/lib/repository/db/query';
+import { IRecordSet } from 'tfso-repository/lib/repository/db/recordset';
 declare abstract class QueryStream<TEntity> extends Query<TEntity> {
     private _connection;
     private _transaction;

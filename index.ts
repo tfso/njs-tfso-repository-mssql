@@ -1,4 +1,4 @@
-﻿export { default as QueryRecordset } from './src/queryrecordset';
-export { default as QueryStream } from './src/querystream';
+﻿export { default as QueryRecordset } from './lib/queryrecordset';
+export { default as QueryStream } from './lib/querystream';
 
-export { default as Connection } from './src/connection';
+export { default as Connection } from './lib/connection';

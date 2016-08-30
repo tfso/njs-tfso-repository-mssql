@@ -1,5 +1,6 @@
 ﻿import * as MsSql from 'mssql';
-import { Query, IRecordSet, RecordSet } from 'tfso-repository';
+import { Query } from 'tfso-repository/lib/repository/db/query';
+import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
 export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
     private _request: MsSql.Request;

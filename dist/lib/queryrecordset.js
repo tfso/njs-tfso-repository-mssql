@@ -1,8 +1,9 @@
 "use strict";
 const MsSql = require('mssql');
-const tfso_repository_1 = require('tfso-repository');
-exports.RecordSet = tfso_repository_1.RecordSet;
-class QueryRecordSet extends tfso_repository_1.Query {
+const query_1 = require('tfso-repository/lib/repository/db/query');
+const recordset_1 = require('tfso-repository/lib/repository/db/recordset');
+exports.RecordSet = recordset_1.RecordSet;
+class QueryRecordSet extends query_1.Query {
     constructor(connection) {
         super();
         this._request = new MsSql.Request();
@@ -35,7 +36,7 @@ class QueryRecordSet extends tfso_repository_1.Query {
                 this._request.query(this.commandText, (err, recordset, rowsAffected) => {
                     if (err)
                         return reject(err);
-                    resolve(new tfso_repository_1.RecordSet(recordset ? recordset.map(this.transform).filter(this.predicate) : [], rowsAffected, Date.now() - timed));
+                    resolve(new recordset_1.RecordSet(recordset ? recordset.map(this.transform).filter(this.predicate) : [], rowsAffected, Date.now() - timed));
                 });
             }
             catch (ex) {
