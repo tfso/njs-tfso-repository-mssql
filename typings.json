@@ -1,0 +1,7 @@
+﻿{
+  "globalDependencies": {
+    "mocha": "registry:dt/mocha#2.2.5+20160317120654",
+    "node": "registry:dt/node#6.0.0+20160621231320",
+    "mssql": "registry:dt/mssql#3.1.0+20160412134559"
+  }
+}
