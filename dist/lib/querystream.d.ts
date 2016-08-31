@@ -1,7 +1,7 @@
 import * as MsSql from 'mssql';
 import { Query } from 'tfso-repository/dist/lib/repository/db/query';
 import { IRecordSet } from 'tfso-repository/dist/lib/repository/db/recordset';
-declare abstract class QueryStream<TEntity> extends Query<TEntity> implements PromiseLike<IRecordSet<TEntity>> {
+declare abstract class QueryStream<TEntity> extends Query<TEntity> {
     private _connection;
     private _transaction;
     constructor(connection?: MsSql.Connection | MsSql.Transaction);

@@ -2,7 +2,7 @@
 import { Query } from 'tfso-repository/dist/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/dist/lib/repository/db/recordset';
 
-abstract class QueryStream<TEntity> extends Query<TEntity> implements PromiseLike<IRecordSet<TEntity>>  {
+abstract class QueryStream<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
     private _transaction: MsSql.Transaction;
 
