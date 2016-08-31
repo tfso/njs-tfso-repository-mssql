@@ -22,7 +22,7 @@ class QueryStream extends query_1.Query {
             value = type;
             type = null;
         }
-        this.parameters[name] = { name: name, type: type, value: value };
+        super.parameters[name] = { name: name, type: type, value: value };
     }
     set commandText(query) {
         super.commandText = query;
@@ -38,8 +38,8 @@ class QueryStream extends query_1.Query {
             request.connection = this._connection;
             request.transaction = this._transaction;
             predicate = this.predicate;
-            for (let key in this.parameters) {
-                let param = this.parameters[key];
+            for (let key in super.parameters) {
+                let param = super.parameters[key];
                 request.input(param.name, param.type, param.value);
             }
             request.on('row', (row) => {

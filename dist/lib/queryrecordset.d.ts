@@ -2,7 +2,8 @@ import * as MsSql from 'mssql';
 import { Query } from 'tfso-repository/dist/lib/repository/db/query';
 import { RecordSet } from 'tfso-repository/dist/lib/repository/db/recordset';
 export declare abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
-    private _request;
+    private _connection;
+    private _transaction;
     constructor(connection?: MsSql.Connection | MsSql.Transaction);
     connection: MsSql.Transaction | MsSql.Connection;
     protected input(name: string, value: any): void;

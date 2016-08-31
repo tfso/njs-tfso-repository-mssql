@@ -6,28 +6,24 @@ exports.RecordSet = recordset_1.RecordSet;
 class QueryRecordSet extends query_1.Query {
     constructor(connection) {
         super();
-        this._request = new MsSql.Request();
         if (connection != null)
             this.connection = connection;
     }
     set connection(connection) {
         if (connection instanceof MsSql.Transaction) {
-            this._request.transaction = connection;
-            this._request.connection = connection.connection;
+            this._transaction = connection;
+            this._connection = connection.connection;
         }
         else {
-            this._request.connection = connection;
+            this._connection = connection;
         }
     }
     input(name, type, value) {
         if (arguments.length == 2) {
-            this._request.input(name, value = type);
+            value = type;
             type = null;
         }
-        else {
-            this._request.input(name, type, value);
-        }
-        this.parameters[name] = { name: name, type: type, value: value };
+        super.parameters[name] = { name: name, type: type, value: value };
     }
     set commandText(query) {
         super.commandText = query;
@@ -38,8 +34,16 @@ class QueryRecordSet extends query_1.Query {
     executeQuery() {
         return new Promise((resolve, reject) => {
             try {
-                let timed = Date.now();
-                this._request.query(this.commandText, (err, recordset, rowsAffected) => {
+                let request = new MsSql.Request(), // thread safe as we have a request object for each promise
+                timed = Date.now();
+                request = new MsSql.Request();
+                request.connection = this._connection;
+                request.transaction = this._transaction;
+                for (let key in super.parameters) {
+                    let param = super.parameters[key];
+                    request.input(param.name, param.type, param.value);
+                }
+                request.query(this.commandText, (err, recordset, rowsAffected) => {
                     if (err)
                         return reject(err);
                     resolve(new recordset_1.RecordSet(recordset ? recordset.map(this.transform).filter(this.predicate) : [], rowsAffected, Date.now() - timed));

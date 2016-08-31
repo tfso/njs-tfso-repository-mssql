@@ -30,7 +30,7 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
             value = type; type = null;
         }
 
-        this.parameters[name] = { name: name, type: type, value: value };
+        super.parameters[name] = { name: name, type: type, value: value };
     }
 
     protected set commandText(query: string) {
@@ -55,8 +55,8 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
 
             predicate = this.predicate;
 
-            for (let key in this.parameters) {
-                let param = this.parameters[key];
+            for (let key in super.parameters) {
+                let param = super.parameters[key];
 
                 request.input(param.name, param.type, param.value);
             }
