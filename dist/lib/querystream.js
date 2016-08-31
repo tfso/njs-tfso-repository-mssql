@@ -1,7 +1,7 @@
 "use strict";
 const MsSql = require('mssql');
-const query_1 = require('tfso-repository/lib/repository/db/query');
-const recordset_1 = require('tfso-repository/lib/repository/db/recordset');
+const query_1 = require('tfso-repository/dist/lib/repository/db/query');
+const recordset_1 = require('tfso-repository/dist/lib/repository/db/recordset');
 class QueryStream extends query_1.Query {
     constructor(connection) {
         super();
