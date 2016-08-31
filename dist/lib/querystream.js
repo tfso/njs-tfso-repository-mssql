@@ -22,13 +22,7 @@ class QueryStream extends query_1.Query {
             value = type;
             type = null;
         }
-        super.parameters[name] = { name: name, type: type, value: value };
-    }
-    set commandText(query) {
-        super.commandText = query;
-    }
-    get commandText() {
-        return super.commandText;
+        this.parameters[name] = { name: name, type: type, value: value };
     }
     executeQuery() {
         return new Promise((resolve, reject) => {

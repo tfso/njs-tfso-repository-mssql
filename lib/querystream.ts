@@ -30,15 +30,7 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
             value = type; type = null;
         }
 
-        super.parameters[name] = { name: name, type: type, value: value };
-    }
-
-    protected set commandText(query: string) {
-        super.commandText = query;
-    }
-
-    protected get commandText(): string {
-        return super.commandText;
+        this.parameters[name] = { name: name, type: type, value: value };
     }
 
     protected executeQuery(): Promise<IRecordSet<TEntity>> {
