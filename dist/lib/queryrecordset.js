@@ -33,8 +33,8 @@ class QueryRecordSet extends query_1.Query {
                 request = new MsSql.Request();
                 request.connection = this._connection;
                 request.transaction = this._transaction;
-                for (let key in super.parameters) {
-                    let param = super.parameters[key];
+                for (let key in this.parameters) {
+                    let param = this.parameters[key];
                     request.input(param.name, param.type, param.value);
                 }
                 request.query(this.commandText, (err, recordset, rowsAffected) => {

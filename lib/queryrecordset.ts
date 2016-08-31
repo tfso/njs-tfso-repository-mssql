@@ -44,8 +44,8 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                 request.connection = this._connection;
                 request.transaction = this._transaction;
 
-                for (let key in super.parameters) {
-                    let param = super.parameters[key];
+                for (let key in this.parameters) {
+                    let param = this.parameters[key];
 
                     request.input(param.name, param.type, param.value);
                 }
