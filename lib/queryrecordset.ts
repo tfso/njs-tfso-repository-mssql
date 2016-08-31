@@ -37,6 +37,14 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
         this.parameters[name] = { name: name, type: type, value: value };
     }
 
+    protected set commandText(query: string) {
+        super.commandText = query;
+    }
+
+    protected get commandText(): string {
+        return super.commandText;
+    }
+
     protected executeQuery(): Promise<RecordSet<TEntity>> {
         return new Promise((resolve, reject) => {
             try {

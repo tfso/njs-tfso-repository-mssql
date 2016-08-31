@@ -24,6 +24,12 @@ class QueryStream extends query_1.Query {
         }
         this.parameters[name] = { name: name, type: type, value: value };
     }
+    set commandText(query) {
+        super.commandText = query;
+    }
+    get commandText() {
+        return super.commandText;
+    }
     executeQuery() {
         return new Promise((resolve, reject) => {
             let request = new MsSql.Request(), // thread safe as we have a request object for each promise

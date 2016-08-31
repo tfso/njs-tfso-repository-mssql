@@ -29,6 +29,12 @@ class QueryRecordSet extends query_1.Query {
         }
         this.parameters[name] = { name: name, type: type, value: value };
     }
+    set commandText(query) {
+        super.commandText = query;
+    }
+    get commandText() {
+        return super.commandText;
+    }
     executeQuery() {
         return new Promise((resolve, reject) => {
             try {

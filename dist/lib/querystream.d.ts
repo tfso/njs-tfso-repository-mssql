@@ -8,6 +8,7 @@ declare abstract class QueryStream<TEntity> extends Query<TEntity> {
     connection: MsSql.Transaction | MsSql.Connection;
     protected input(name: string, value: any): void;
     protected input(name: string, type: any, value: any): void;
+    protected commandText: string;
     protected executeQuery(): Promise<IRecordSet<TEntity>>;
     protected abstract transform(record: any): TEntity;
 }
