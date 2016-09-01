@@ -1,10 +1,16 @@
 ﻿version: 1.0.{build}
 environment:
   nodejs_version: "6"
+  access_token:
+    secure: +jk2XUVt/vMWiMD2OepSw72zo5qXtMXJYbByvNUpN53otaJhmnCbtMWVCJe70IKL
 build:
   verbosity: minimal
+branches:
+    only:
+      - master
+skip_tags: true
 install:
-  # Get the latest stable version of Node.js or io.js
+  # get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
   # install modules
   - npm install
@@ -19,6 +25,15 @@ test_script:
 after_test:
   # remove npm_modules as this should be installed whenever this package is used
   - FOR /f %%n IN ('dir .\node_modules /d /b /a:d ^| findstr /R /C:"^[A-Za-z].*$"') DO npm uninstall %%n
+  # git
+  - git config --global credential.helper store
+  - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+  - git config --global user.email "post@24sevenoffice.com"
+  - git config --global user.name "24SevenOffice"
+  - git add ./lib
+  - git commit -a -m "Adding release files for version %appveyor_build_version%"
+  - git tag -a %appveyor_build_version% -m "Release files"
+  - git push origin --tags
 artifacts:
 - path: '\'
   name: tfso-repository-mssql
