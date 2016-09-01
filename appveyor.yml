@@ -31,9 +31,9 @@ after_test:
   - git config --global user.email "post@24sevenoffice.com"
   - git config --global user.name "24SevenOffice"
   - git add ./lib
-  - git commit -a -m "Adding release files for version %appveyor_build_version%"
-  - git tag -a %appveyor_build_version% -m "Release files"
-  - git push origin --tags
+  - git commit -a -m "Adding release files"
+  - git tag -a %appveyor_build_version% -m "Release files for version %appveyor_build_version%"
+  - git push origin %appveyor_build_version%
 artifacts:
 - path: '\'
   name: tfso-repository-mssql
