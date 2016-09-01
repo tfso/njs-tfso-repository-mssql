@@ -3,18 +3,17 @@
         "target": "ES6",
         "module": "commonjs",
         "declaration": true,
-        "traceResolution":  true,
         //"noImplicitAny": true,
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
         "noLib": false,
-        "preserveConstEnums": true,
-        "outDir": "./lib",
-        "rootDir": "./src"
+        "preserveConstEnums": true
+        //"outDir": "./lib",
+        //"rootDir": "./src"
     },
     "exclude": [
-        "dist",
+        //"lib",
         "node_modules",
         "examples"
     ]

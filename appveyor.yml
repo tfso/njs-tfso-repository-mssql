@@ -1,0 +1,31 @@
+﻿version: 1.0.{build}
+environment:
+  nodejs_version: "6"
+build:
+  verbosity: minimal
+install:
+  # Get the latest stable version of Node.js or io.js
+  - ps: Install-Product node $env:nodejs_version
+  # install modules
+  - npm install
+  - npm install -g tfso/AppVeyor#1.0.110
+  - npm install -g mocha-appveyor-reporter
+  - npm install -g mocha
+build_script:
+  - node node_modules\typescript\bin\tsc --rootDir ./src/ --outDir ./lib
+  - patch-version
+test_script:
+  - mocha --reporter mocha-appveyor-reporter ./lib/test/ --no-exit
+after_test:
+  # remove npm_modules as this should be installed whenever this package is used
+  - FOR /f %%n IN ('dir .\node_modules /d /b /a:d ^| findstr /R /C:"^[A-Za-z].*$"') DO npm uninstall %%n
+artifacts:
+- path: '\'
+  name: tfso-repository-mssql
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: +jk2XUVt/vMWiMD2OepSw72zo5qXtMXJYbByvNUpN53otaJhmnCbtMWVCJe70IKL
+  draft: true
+  prerelease: false
+  force_update: true
