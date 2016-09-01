@@ -38,6 +38,4 @@ jspm_packages
 .node_repl_history
 
 # Visual Studio 
-/bin
-/obj/Debug
 /.ntvs_analysis.dat*

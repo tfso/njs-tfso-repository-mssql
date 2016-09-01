@@ -1,5 +1,5 @@
 ﻿import assert = require('assert');
-import { QueryRecordSet, RecordSet } from './../lib/queryrecordset';
+import { QueryRecordSet, RecordSet } from './../db/queryrecordset';
 
 describe("When using QueryTemplate for MsSql queries", () => {
     var myQuery: SelectOne;

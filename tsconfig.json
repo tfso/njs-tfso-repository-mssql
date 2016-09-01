@@ -8,9 +8,10 @@
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
-        "outDir": "./dist",
         "noLib": false,
-        "preserveConstEnums": true
+        "preserveConstEnums": true,
+        "outDir": "./lib",
+        "rootDir": "./src"
     },
     "exclude": [
         "dist",
