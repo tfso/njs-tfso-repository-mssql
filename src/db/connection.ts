@@ -1,15 +1,19 @@
 ﻿import * as MsSql from 'mssql';
 
 export default class Connection {
-    private _connectionString: MsSql.config;
+    private _connectionString: PromiseLike<MsSql.config>;
     
     private _connection: MsSql.Connection = null;
     private _transaction: MsSql.Transaction = null;
 
     private _rolledback = false;
 
-    constructor(connectionString: MsSql.config) {
-        this._connectionString = <MsSql.config>connectionString;
+    constructor(connectionString: MsSql.config | PromiseLike<MsSql.config>) {
+        if (typeof connectionString == 'object') {
+            this._connectionString = Promise.resolve(connectionString);
+        } else {
+            this._connectionString = connectionString;
+        }
     }
 
     public beginTransaction(): Promise<void> {
@@ -18,24 +22,27 @@ export default class Connection {
                 if (this._transaction)
                     reject(new Error('SqlConnection has a active transaction'));
 
-                this._connection = new MsSql.Connection(this._connectionString);
-                this._transaction = new MsSql.Transaction(this._connection);
+                this._connectionString
+                    .then((connectionString) => {
+                        this._connection = new MsSql.Connection(connectionString);
+                        this._transaction = new MsSql.Transaction(this._connection);
 
-                this._rolledback = false;
+                        this._rolledback = false;
 
-                this._transaction.on('rollback', (aborted) => {
-                    this._rolledback = true;
-                });
+                        this._transaction.on('rollback', (aborted) => {
+                            this._rolledback = true;
+                        });
 
-                this._connection.connect()
-                    .then(() => {
-                        return this._transaction.begin();
-                    })
-                    .then(() => {
-                        resolve();
-                    })
-                    .catch((err) => {
-                        reject(err);
+                        this._connection.connect()
+                            .then(() => {
+                                return this._transaction.begin();
+                            })
+                            .then(() => {
+                                resolve();
+                            })
+                            .catch((err) => {
+                                reject(err);
+                            });
                     });
             }
             catch (ex) {
@@ -115,29 +122,32 @@ export default class Connection {
                     }
                 }
                 else {
-                    var connection = new MsSql.Connection(this._connectionString);
+                    this._connectionString
+                        .then((connectionString) => {
+                            var connection = new MsSql.Connection(connectionString);
 
-                    connection.connect()
-                        .then(() => {
-                            if (typeof executable == 'function') {
-                                return executable(connection);
-                            } else {
-                                executable.connection = connection;
-                                return executable;
-                            }
-                        })
-                        .then((result) => {
-                            if (connection.connected)
-                                connection.close();
+                            connection.connect()
+                                .then(() => {
+                                    if (typeof executable == 'function') {
+                                        return executable(connection);
+                                    } else {
+                                        executable.connection = connection;
+                                        return executable;
+                                    }
+                                })
+                                .then((result) => {
+                                    if (connection.connected)
+                                        connection.close();
 
-                            resolve(result);
-                        })
-                        .catch(function (ex) {
-                            if (connection.connected)
-                                connection.close();
+                                    resolve(result);
+                                })
+                                .catch(function (ex) {
+                                    if (connection.connected)
+                                        connection.close();
 
-                            reject(ex);
-                        })
+                                    reject(ex);
+                                })
+                        });
                 }
             }
             catch (ex) {
