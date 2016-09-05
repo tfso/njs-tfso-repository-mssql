@@ -12,7 +12,7 @@ export default class Connection {
         if (typeof connectionString == 'object') {
             this._connectionString = Promise.resolve(connectionString);
         } else {
-            this._connectionString = connectionString;
+            this._connectionString = connectionString as PromiseLike<MsSql.config>;
         }
     }
 
