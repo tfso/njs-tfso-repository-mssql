@@ -2,7 +2,7 @@
 environment:
   nodejs_version: "6"
   access_token:
-    secure: +jk2XUVt/vMWiMD2OepSw72zo5qXtMXJYbByvNUpN53otaJhmnCbtMWVCJe70IKL
+    secure: sbBna4fwB5pwz2FWSkskL1UJZLvZmSQ5/tItIVC3ESN+gefKxwXIhj0IHXUATpmo
 build:
   verbosity: minimal
 branches:
@@ -25,7 +25,7 @@ test_script:
 after_test:
   # remove npm_modules as this should be installed whenever this package is used
   - FOR /f %%n IN ('dir .\node_modules /d /b /a:d ^| findstr /R /C:"^[A-Za-z].*$"') DO npm uninstall %%n
-  # git
+  # git tagging source for github releases in addition to artifact to make npm usage useful
   - git config --global credential.helper store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
   - git config --global user.email "post@24sevenoffice.com"
@@ -40,7 +40,7 @@ artifacts:
 deploy:
 - provider: GitHub
   auth_token:
-    secure: +jk2XUVt/vMWiMD2OepSw72zo5qXtMXJYbByvNUpN53otaJhmnCbtMWVCJe70IKL
+    secure: sbBna4fwB5pwz2FWSkskL1UJZLvZmSQ5/tItIVC3ESN+gefKxwXIhj0IHXUATpmo
   draft: true
   prerelease: false
   force_update: true

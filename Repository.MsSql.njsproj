@@ -45,6 +45,7 @@
     </TypeScriptCompile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="lib\" />
     <Folder Include="src\" />
     <Folder Include="src\db\" />
     <Folder Include="src\test\" />
