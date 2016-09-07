@@ -43,6 +43,8 @@ export default class Connection {
                             .catch((err) => {
                                 reject(err);
                             });
+                    }, (err) => {
+                        reject(err);
                     });
             }
             catch (ex) {
@@ -147,6 +149,8 @@ export default class Connection {
 
                                     reject(ex);
                                 })
+                        }, (err) => {
+                            reject(err);
                         });
                 }
             }
