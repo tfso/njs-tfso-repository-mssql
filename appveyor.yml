@@ -25,6 +25,7 @@ test_script:
 after_test:
   # remove npm_modules as this should be installed whenever this package is used
   - FOR /f %%n IN ('dir .\node_modules /d /b /a:d ^| findstr /R /C:"^[A-Za-z].*$"') DO npm uninstall %%n
+deploy_script:
   # git tagging source for github releases in addition to artifact to make npm usage useful
   - git config --global credential.helper store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
@@ -32,15 +33,5 @@ after_test:
   - git config --global user.name "24SevenOffice"
   - git add ./lib
   - git commit -a -m "Adding release files"
-  - git tag -a %appveyor_build_version% -m "Release files for version %appveyor_build_version%"
+  - git tag -a %appveyor_build_version% -m "%APPVEYOR_REPO_COMMIT_MESSAGE% %APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED%"
   - git push origin %appveyor_build_version%
-artifacts:
-- path: '\'
-  name: tfso-repository-mssql
-deploy:
-- provider: GitHub
-  auth_token:
-    secure: sbBna4fwB5pwz2FWSkskL1UJZLvZmSQ5/tItIVC3ESN+gefKxwXIhj0IHXUATpmo
-  draft: true
-  prerelease: false
-  force_update: true
