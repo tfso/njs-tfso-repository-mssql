@@ -50,7 +50,10 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
             for (let key in this.parameters) {
                 let param = this.parameters[key];
 
-                request.input(param.name, param.type, param.value);
+                if (param.type == null)
+                    request.input(param.name, param.value);
+                else
+                    request.input(param.name, param.type, param.value);
             }
 
             request.on('row', (row) => {
@@ -60,11 +63,11 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
                     records.push(entity);
             });
 
-            request.on('error', function (err) {
+            request.on('error', (err) => {
                 error = err;
             });
 
-            request.on('done', function (affected) {
+            request.on('done', (affected) => {
                 if (error != null)
                     reject(error);
                 else

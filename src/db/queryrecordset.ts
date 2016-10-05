@@ -47,7 +47,10 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                 for (let key in this.parameters) {
                     let param = this.parameters[key];
 
-                    request.input(param.name, param.type, param.value);
+                    if(param.type == null)
+                        request.input(param.name, param.value);
+                    else
+                        request.input(param.name, param.type, param.value);
                 }
 
                 request.query(this.commandText, (err, recordset, rowsAffected) => {
