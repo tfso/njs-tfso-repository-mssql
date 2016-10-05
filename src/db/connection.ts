@@ -9,11 +9,7 @@ export default class Connection {
     private _rolledback = false;
 
     constructor(connectionString: MsSql.config | PromiseLike<MsSql.config>) {
-        if (typeof connectionString == 'object') {
-            this._connectionString = Promise.resolve(connectionString);
-        } else {
-            this._connectionString = connectionString as PromiseLike<MsSql.config>;
-        }
+        this._connectionString = Promise.resolve(connectionString);
     }
 
     public beginTransaction(): Promise<void> {
@@ -82,7 +78,7 @@ export default class Connection {
                     reject(new Error('SqlConnection has no active transaction'));
 
                 if (!this._rolledback) {
-                    this._transaction.rollback(function (err) {
+                    this._transaction.rollback((err) => {
                         this._transaction = null;
 
                         if (this._connection && this._connection.connected)
@@ -143,7 +139,7 @@ export default class Connection {
 
                                     resolve(result);
                                 })
-                                .catch(function (ex) {
+                                .catch((ex) => {
                                     if (connection.connected)
                                         connection.close();
 
