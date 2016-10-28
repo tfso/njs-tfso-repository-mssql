@@ -21,7 +21,7 @@
     },
     "dependencies": {
         "mssql": "^3.3.0",
-        "tfso-repository": "tfso/njs-tfso-repository#1.0.28"
+        "tfso-repository": "tfso/njs-tfso-repository#1.0.29"
     },
     "devDependencies": {
         "istanbul": "^0.4.4",

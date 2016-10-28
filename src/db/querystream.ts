@@ -2,6 +2,8 @@
 import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
+import { WhereOperator } from 'tfso-repository/lib/linq/operators/whereoperator';
+
 abstract class QueryStream<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
     private _transaction: MsSql.Transaction;
@@ -45,7 +47,15 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
             request.connection = this._connection;
             request.transaction = this._transaction;
 
-            predicate = this.predicate;
+            predicate = (entity) => true;
+            for (let operator of this.query.getOperations())
+                if (operator instanceof WhereOperator) {
+                    var op = <WhereOperator<TEntity>>operator;
+
+                    predicate = (entity: TEntity) => {
+                        return op.predicate.apply({}, [entity].concat(op.parameters));
+                    };
+                }
 
             for (let key in this.parameters) {
                 let param = this.parameters[key];

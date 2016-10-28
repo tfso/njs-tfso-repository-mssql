@@ -2,6 +2,8 @@
 import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
+import { WhereOperator } from 'tfso-repository/lib/linq/operators/whereoperator';
+
 export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
     private _transaction: MsSql.Transaction;
@@ -37,12 +39,24 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
         return new Promise((resolve, reject) => {
             try {
                 let request = new MsSql.Request(), // thread safe as we have a request object for each promise
+                    predicate: (entity: TEntity) => boolean,
                     timed = Date.now();
+                    
 
                 request = new MsSql.Request();
 
                 request.connection = this._connection;
                 request.transaction = this._transaction;
+
+                predicate = (entity) => true;
+                for (let operator of this.query.getOperations())
+                    if (operator instanceof WhereOperator) {
+                        var op = <WhereOperator<TEntity>>operator;
+
+                        predicate = (entity: TEntity) => {
+                            return op.predicate.apply({}, [entity].concat(op.parameters));
+                        };
+                    }
 
                 for (let key in this.parameters) {
                     let param = this.parameters[key];
@@ -57,7 +71,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                     if (err)
                         return reject(err);
 
-                    resolve(new RecordSet(recordset ? recordset.map(this.transform).filter(this.predicate) : [], rowsAffected, Date.now() - timed));
+                    resolve(new RecordSet(recordset ? recordset.map(this.transform).filter(predicate) : [], rowsAffected, Date.now() - timed));
                 });
             }
             catch (ex) {
