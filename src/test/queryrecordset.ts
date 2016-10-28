@@ -1,11 +1,32 @@
 ﻿import assert = require('assert');
-import { QueryRecordSet, RecordSet } from './../db/queryrecordset';
 
-describe("When using QueryTemplate for MsSql queries", () => {
-    var myQuery: SelectOne;
+import * as MsSql from 'mssql';
+
+import { QueryRecordSet, RecordSet } from './../db/queryrecordset';
+import { RequestMock } from './base/requestmock';
+
+describe("When using QueryRecordSet for MsSql queries", () => {
+    var myQuery: SelectOne,
+        data: Array<any>;
 
     beforeEach(() => {
-        myQuery = new SelectOne(1);
+        data = [
+            { no: 1, name: 'ABC' },
+            { no: 2, name: 'DEF' },
+            { no: 3, name: 'GHI' },
+            { no: 4, name: 'JKL' },
+            { no: 5, name: 'MNO' },
+            { no: 6, name: 'PQR' },
+            { no: 7, name: 'STU' },
+            { no: 8, name: 'VWX' },
+            { no: 9, name: 'YZÆ' },
+            { no: 10, name: 'ØÅ1' },
+            { no: 11, name: '234' },
+            { no: 12, name: '567' },
+            { no: 13, name: '890' }
+        ];
+
+        myQuery = new SelectOne(data, 1);
     })
 
     it("should return a model", (done) => {
@@ -19,6 +40,53 @@ describe("When using QueryTemplate for MsSql queries", () => {
             done
         );
     });
+
+    it("should handle paging", () => {
+        myQuery = new SelectOne(data);
+        myQuery.query.skip(3).take(5);
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+                assert.equal(recordset.records[0].name, "JKL");
+            });
+    })
+
+    it("should be able to skip rows", () => {
+        myQuery = new SelectOne(data);
+        myQuery.query.skip(10);
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 3);
+                assert.equal(recordset.records[0].name, "234");
+            });
+    })
+
+    it("should be able to take rows", () => {
+        myQuery = new SelectOne(data);
+        myQuery.query.take(5);
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+            });
+    })
+
+    it("should be able to override skipping of rows", () => {
+        myQuery = new SelectOne(data);
+        myQuery.query.skip(3).take(5);
+
+        var skip = myQuery.query.operations.values().next().value;
+
+        myQuery.query.operations.remove(skip);
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+                assert.equal(recordset.records[0].name, "ABC");
+            });
+    })
 
     it("should handle multiple thens", (done) => {
         myQuery
@@ -106,7 +174,7 @@ class SelectOne extends QueryRecordSet<IModel>
     // for mocking
     public shouldFail = false;
 
-    constructor(no: number) {
+    constructor(private data: Array<any>, no?: number) {
         super();
 
         this.input("num", no);
@@ -123,28 +191,13 @@ class SelectOne extends QueryRecordSet<IModel>
     /**
      * Overriding for mocking as we don't have a valid MsSql connection and request
      */
-    protected executeQuery() {
-        return new Promise((resolve, reject) => {
-            if (this.shouldFail == false) {
-
-                if (this.parameters["num"].value == 1) {
-                    resolve(new RecordSet<IModel>(
-                        new Array({
-                            no: 1, name: 'Tekst'
-                        }).map(this.transform)
-                    ))
-                }
-                else {
-                    resolve(new RecordSet<IModel>(new Array().map(this.transform)));
-                }
-            }
-            else {
-                reject(new Error('Internal MsSql error'));
-            }
-        })
+    protected createRequest(): MsSql.Request {
+        if (this.shouldFail) {
+            return new RequestMock([], true);
+        } else {
+            return (this.parameters["num"].value != null) ? new RequestMock(this.data.filter(record => record.no == this.parameters["num"].value)) : new RequestMock(this.data);
+        }
     }
-
-
 }
 
 

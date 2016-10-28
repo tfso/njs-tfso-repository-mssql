@@ -3,8 +3,10 @@ import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
 import { WhereOperator } from 'tfso-repository/lib/linq/operators/whereoperator';
+import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
+import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
 
-abstract class QueryStream<TEntity> extends Query<TEntity> {
+export abstract class QueryStream<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
     private _transaction: MsSql.Transaction;
 
@@ -35,9 +37,13 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
         this.parameters[name] = { name: name, type: type, value: value };
     }
 
+    protected createRequest(): MsSql.Request {
+        return new MsSql.Request();
+    }
+
     protected executeQuery(): Promise<IRecordSet<TEntity>> {
         return new Promise((resolve, reject) => {
-            let request = new MsSql.Request(), // thread safe as we have a request object for each promise
+            let request = this.createRequest(), // thread safe as we have a request object for each promise
                 error: Error = null,
                 records: Array<TEntity> = [],
                 predicate: (entity: TEntity) => boolean,
@@ -47,15 +53,25 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
             request.connection = this._connection;
             request.transaction = this._transaction;
 
-            predicate = (entity) => true;
-            for (let operator of this.query.getOperations())
-                if (operator instanceof WhereOperator) {
-                    var op = <WhereOperator<TEntity>>operator;
+            var skip: number = undefined, skipped: number = 0,
+                take: number = undefined, taken: number = 0;
 
-                    predicate = (entity: TEntity) => {
-                        return op.predicate.apply({}, [entity].concat(op.parameters));
-                    };
-                }
+            predicate = (entity) => true;
+            for (let operator of this.query.operations.values()) {
+
+                if (predicate == null && operator instanceof WhereOperator)
+                    predicate = ((op: WhereOperator<TEntity>) => {
+                        return (entity: TEntity) => {
+                            return op.predicate.apply({}, [entity].concat(op.parameters));
+                        }
+                    })(<WhereOperator<TEntity>>operator);
+
+                else if (skip == null && operator instanceof SkipOperator)
+                    skip = (<SkipOperator<TEntity>>operator).count;
+
+                else if (take == null && operator instanceof TakeOperator)
+                    take = (<TakeOperator<TEntity>>operator).count;
+            }
 
             for (let key in this.parameters) {
                 let param = this.parameters[key];
@@ -69,8 +85,12 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
             request.on('row', (row) => {
                 var entity = this.transform(row);
 
-                if (predicate(entity) === true)
-                    records.push(entity);
+                if (predicate(entity) === true) {
+                    if (skip == null || ++skipped > skip) {
+                        if (take == null || ++taken <= take)
+                            records.push(entity);
+                    }
+                }
             });
 
             request.on('error', (err) => {
@@ -93,3 +113,5 @@ abstract class QueryStream<TEntity> extends Query<TEntity> {
 }
 
 export default QueryStream
+
+export { RecordSet }
