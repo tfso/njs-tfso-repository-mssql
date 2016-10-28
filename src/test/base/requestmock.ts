@@ -29,6 +29,7 @@ export class RequestMock extends MsSql.Request {
                     }
                     this.emit('done', 0);
 
+                    return Promise.resolve();
                 } else {
                     return Promise.resolve(this.data);
                 }

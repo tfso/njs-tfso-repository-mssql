@@ -1,32 +1,29 @@
 {
-    "name": "tfso-repository-mssql",
-    "version": "0.0.0",
-    "description": "Simplified Query classes for converting from/to MsSql database",
-    "author": {
-        "name": "Nicolai"
-    },
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/tfso/njs-tfso-repository-mssql.git"
-    },
-    "main": "./lib/index.js",
-    "typings": "./lib/index",
-    "author": {
-        "name": "Nicolai"
-    },
-    "scripts": {
-        "test": "node node_modules/mocha/bin/_mocha --reporter spec --recursive lib/test/*.js",
-        "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --reporter spec --recursive lib/test/*.js"
-    },
-    "dependencies": {
-        "mssql": "^3.3.0",
-        "tfso-repository": "tfso/njs-tfso-repository#1.0.32"
-    },
-    "devDependencies": {
-        "istanbul": "^0.4.4",
-        "mocha": "^2.5.3",
-        "ts-node": "^1.3.0",
-        "typescript": "^1.8.10"
-    }
+  "name": "tfso-repository-mssql",
+  "version": "0.0.0",
+  "description": "Simplified Query classes for converting from/to MsSql database",
+  "author": {
+    "name": "Nicolai"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tfso/njs-tfso-repository-mssql.git"
+  },
+  "main": "./lib/index.js",
+  "typings": "./lib/index",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/_mocha --reporter spec --recursive lib/test/*.js",
+    "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --reporter spec --recursive lib/test/*.js"
+  },
+  "dependencies": {
+    "mssql": "^3.3.0",
+    "tfso-repository": "tfso/njs-tfso-repository#1.0.32"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.4",
+    "mocha": "^2.5.3",
+    "ts-node": "^1.3.0",
+    "typescript": "^2.0.6"
+  }
 }
