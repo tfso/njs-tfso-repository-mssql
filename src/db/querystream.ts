@@ -56,7 +56,6 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
             var skip: number = undefined, skipped: number = 0,
                 take: number = undefined, taken: number = 0;
 
-            predicate = (entity) => true;
             for (let operator of this.query.operations.values()) {
 
                 if (predicate == null && operator instanceof WhereOperator)
@@ -72,6 +71,9 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                 else if (take == null && operator instanceof TakeOperator)
                     take = (<TakeOperator<TEntity>>operator).count;
             }
+
+            if (predicate == null) 
+                predicate = (entity) => true;
 
             for (let key in this.parameters) {
                 let param = this.parameters[key];
