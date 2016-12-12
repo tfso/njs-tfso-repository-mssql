@@ -47,7 +47,8 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                 error: Error = null,
                 records: Array<TEntity> = [],
                 predicate: (entity: TEntity) => boolean,
-                timed: number;
+                timed: number,
+                cancelled: boolean = false;
 
             request.stream = true;
             request.connection = this._connection;
@@ -85,15 +86,28 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
             }
 
             request.on('row', (row) => {
-                var entity = this.transform(row);
+                var entity: TEntity = null;
 
-                if (predicate(entity) === true) {
-                    if (skip == null || ++skipped > skip) {
-                        if (take == null || ++taken <= take)
-                            records.push(entity);
+                if (cancelled)
+                    return;
+                
+                try {
+                    entity = this.transform(row);
+                
+                    if (predicate(entity) === true) {
+                        if (skip == null || ++skipped > skip) {
+                            if (take == null || ++taken <= take)
+                                records.push(entity);
+                        }
                     }
                 }
+                catch (ex) {
+                    cancelled = true;
+                    error = ex;
+                }
             });
+
+            
 
             request.on('error', (err) => {
                 error = err;
