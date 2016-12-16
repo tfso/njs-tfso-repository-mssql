@@ -5,4 +5,4 @@ export { default as QueryStream } from './db/querystream';
 
 export { Query };
 
-export { default as Connection } from './db/connection';
+export { default as Connection, IsolationLevel } from './db/connection';

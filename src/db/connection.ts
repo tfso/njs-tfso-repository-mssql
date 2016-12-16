@@ -1,5 +1,13 @@
 ﻿import * as MsSql from 'mssql';
 
+export enum IsolationLevel {
+    ReadUncommitted,
+    ReadCommitted,
+    RepeatableRead,
+    Snapshot,
+    Serializable
+}
+
 export default class Connection {
     private _connectionString: PromiseLike<MsSql.config>;
     
@@ -12,7 +20,7 @@ export default class Connection {
         this._connectionString = Promise.resolve(connectionString);
     }
 
-    public beginTransaction(): Promise<void> {
+    public beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
                 if (this._transaction)
@@ -31,7 +39,7 @@ export default class Connection {
 
                         this._connection.connect()
                             .then(() => {
-                                return this._transaction.begin();
+                                return this._transaction.begin(this.getIsolationLevel(isolationLevel));
                             })
                             .then(() => {
                                 resolve();
@@ -156,4 +164,26 @@ export default class Connection {
         });
     }
 
+    private getIsolationLevel(isolationLevel: IsolationLevel): MsSql.IIsolationLevel {
+
+        switch (isolationLevel) {
+            case IsolationLevel.ReadCommitted:
+                return MsSql.ISOLATION_LEVEL.READ_COMMITTED;
+
+            case IsolationLevel.ReadUncommitted:
+                return MsSql.ISOLATION_LEVEL.READ_UNCOMMITTED;
+
+            case IsolationLevel.RepeatableRead:
+                return MsSql.ISOLATION_LEVEL.REPEATABLE_READ;
+
+            case IsolationLevel.Serializable:
+                return MsSql.ISOLATION_LEVEL.SERIALIZABLE;
+
+            case IsolationLevel.Snapshot:
+                return MsSql.ISOLATION_LEVEL.SNAPSHOT
+            
+            default:
+                return MsSql.ISOLATION_LEVEL.READ_COMMITTED;
+        }
+    }
 }
