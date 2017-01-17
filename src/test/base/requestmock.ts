@@ -5,6 +5,10 @@ export class RequestMock extends MsSql.Request {
         super();
     }
 
+    //public set multiple(value: boolean) {
+    //    this._multiple = value;
+    //}
+
     public query(command: string): Promise<void>;
     public query<Entity>(command: string): Promise<Entity[]>;
     public query(command: string, callback: (err?: any, recordset?: any, rowsAffected?: number) => void): void;
@@ -13,7 +17,7 @@ export class RequestMock extends MsSql.Request {
         switch(arguments.length) {
             case 2:
                 if (typeof arguments[1] == 'function') {
-                    (<Function>arguments[1]).apply(arguments[1], [this.shouldFail ? new Error('Internal MsSql error') : null, this.data, 0]);
+                    (<Function>arguments[1]).apply(arguments[1], [this.shouldFail ? new Error('Internal MsSql error') : null, (this.multiple ? [ this.data ] : this.data), 0]);
                 }
 
                 break;
@@ -23,6 +27,8 @@ export class RequestMock extends MsSql.Request {
                     if (this.shouldFail) {
                         this.emit('error', new Error('Internal MsSql error'));
                     } else {
+                        this.emit('recordset', Object.getOwnPropertyNames(this.data[0]));
+
                         for (let i = 0; i < this.data.length; i++) {
                             this.emit('row', this.data[i]);
                         }
