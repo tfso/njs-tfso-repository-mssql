@@ -46,6 +46,8 @@ src/**/*.js.map
 src/**/*.d.ts
 
 # Visual Studio 
+.idea
+.vs
 bin
 obj
 .ntvs_analysis.dat*

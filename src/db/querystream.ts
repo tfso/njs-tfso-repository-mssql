@@ -46,11 +46,13 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
             let request = this.createRequest(), // thread safe as we have a request object for each promise
                 error: Error = null,
                 records: Array<TEntity> = [],
+                totalRecords: number = -1,
                 predicate: (entity: TEntity) => boolean,
                 timed: number,
                 cancelled: boolean = false;
 
             request.stream = true;
+            request.multiple = true;
             request.connection = this._connection;
             request.transaction = this._transaction;
 
@@ -85,13 +87,28 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                     request.input(param.name, param.type, param.value);
             }
 
+            request.on('recordset', (columns) => {
+                if (totalRecords < 0)
+                    totalRecords = -1; // reset totalRecords if it isn't set
+
+                records.length = 0;
+            });
+
             request.on('row', (row) => {
                 var entity: TEntity = null;
 
                 if (cancelled)
                     return;
-                
+
                 try {
+                    if (totalRecords == -1) {
+                        // only go here at first row in any recordset if it isn't set
+                        if (row['pagingTotalCount'] && isNaN(row['pagingTotalCount']) == false)
+                            totalRecords = Number(row['pagingTotalCount'])
+                        else
+                            totalRecords = -2;
+                    }
+
                     entity = this.transform(row);
                 
                     if (predicate(entity) === true) {
@@ -117,7 +134,7 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                 if (error != null)
                     reject(error);
                 else
-                    resolve(new RecordSet(records, affected, (Date.now() - timed)));
+                    resolve(new RecordSet(records, affected, (Date.now() - timed), totalRecords >= 0 ? totalRecords : undefined));
             });
 
             timed = Date.now();

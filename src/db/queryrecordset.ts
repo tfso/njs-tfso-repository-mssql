@@ -44,8 +44,10 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
             try {
                 let request = this.createRequest(), // thread safe as we have a request object for each promise
                     predicate: (entity: TEntity) => boolean,
-                    timed = Date.now();
+                    timed = Date.now(),
+                    totalRecords = -1;
 
+                request.multiple = true;
                 request.connection = this._connection;
                 request.transaction = this._transaction;
 
@@ -62,7 +64,28 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                     if (err)
                         return reject(err);
 
-                    resolve(new RecordSet(recordset ? this.query.toArray(recordset.map(this.transform)) : [], rowsAffected, Date.now() - timed));
+                    let results: Array<any>;
+
+                    for (let i = 0; i < recordset.length; i++) {
+                        // go through each recordst and check for totalRecords
+                        if (totalRecords == -1) {
+                            let row: any = null;
+                            
+                            if (Array.isArray(recordset[i]) && recordset[i].length > 0)
+                                row = recordset[i][0];
+
+                            if(row) {
+                                if (row['pagingTotalCount'] && isNaN(row['pagingTotalCount']) == false) {
+                                    totalRecords = Number(row['pagingTotalCount'])
+                                }
+                            }
+                        }
+
+                        // set last recordset as the result recordset
+                        results = recordset[i];
+                    }
+
+                    resolve(new RecordSet(recordset ? this.query.toArray(results.map(this.transform)) : [], rowsAffected, Date.now() - timed, totalRecords >= 0 ? totalRecords : undefined));
                 });
             }
             catch (ex) {
