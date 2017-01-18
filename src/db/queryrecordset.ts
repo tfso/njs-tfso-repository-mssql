@@ -64,28 +64,33 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                     if (err)
                         return reject(err);
 
-                    let results: Array<any>;
+                    try {
+                        let results: Array<any> = [];
 
-                    for (let i = 0; i < recordset.length; i++) {
-                        // go through each recordst and check for totalRecords
-                        if (totalRecords == -1) {
-                            let row: any = null;
-                            
-                            if (Array.isArray(recordset[i]) && recordset[i].length > 0)
-                                row = recordset[i][0];
+                        for (let i = 0; i < recordset.length; i++) {
+                            // go through each recordst and check for totalRecords
+                            if (totalRecords == -1) {
+                                let row: any = null;
 
-                            if(row) {
-                                if (row['pagingTotalCount'] && isNaN(row['pagingTotalCount']) == false) {
-                                    totalRecords = Number(row['pagingTotalCount'])
+                                if (Array.isArray(recordset[i]) && recordset[i].length > 0)
+                                    row = recordset[i][0];
+
+                                if (row) {
+                                    if (row['pagingTotalCount'] && isNaN(row['pagingTotalCount']) == false) {
+                                        totalRecords = Number(row['pagingTotalCount'])
+                                    }
                                 }
                             }
+
+                            // set last recordset as the result recordset
+                            results = recordset[i];
                         }
 
-                        // set last recordset as the result recordset
-                        results = recordset[i];
+                        resolve(new RecordSet(recordset ? this.query.toArray(results.map(this.transform)) : [], rowsAffected, Date.now() - timed, totalRecords >= 0 ? totalRecords : undefined));
                     }
-
-                    resolve(new RecordSet(recordset ? this.query.toArray(results.map(this.transform)) : [], rowsAffected, Date.now() - timed, totalRecords >= 0 ? totalRecords : undefined));
+                    catch (ex) {
+                        reject(ex);
+                    }
                 });
             }
             catch (ex) {
