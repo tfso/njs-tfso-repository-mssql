@@ -93,6 +93,8 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                         totalRecords = -1; // reset totalRecords if it isn't set
 
                     records.length = 0;
+                    skipped = 0;
+                    taken = 0;
                 });
 
                 request.on('row', (row) => {

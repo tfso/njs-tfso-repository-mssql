@@ -1,4 +1,6 @@
 ﻿import * as MsSql from 'mssql';
+import { Query } from 'tfso-repository/lib/repository/db/query';
+import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
 export enum IsolationLevel {
     ReadUncommitted,
@@ -111,9 +113,9 @@ export default class Connection {
         })
     }
 
-    public execute<U>(query: PromiseLike<U>): Promise<U>
-    public execute<U>(work: (connection: MsSql.Connection) => U | PromiseLike<U>): Promise<U>
-    public execute<U>(executable: any): Promise<U> {
+    public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
+    public execute<U>(work: (connection: MsSql.Connection) => IRecordSet<U> | PromiseLike<IRecordSet<U>>): Promise<IRecordSet<U>>
+    public execute<U>(executable: any): Promise<IRecordSet<U>> {
         return new Promise((resolve, reject) => {
             try {
                 if (this._transaction != null) {
@@ -135,7 +137,7 @@ export default class Connection {
                             connection.connect()
                                 .then(() => {
                                     if (typeof executable == 'function') {
-                                        return executable(connection);
+                                        return Promise.resolve(executable(connection))
                                     } else {
                                         executable.connection = connection;
                                         return executable;
