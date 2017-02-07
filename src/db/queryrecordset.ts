@@ -47,8 +47,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                 let request = this.createRequest(), // thread safe as we have a request object for each promise
                     predicate: (entity: TEntity) => boolean,
                     timed = Date.now(),
-                    totalRecords = -1,
-                    totalPredicateIterations: number = 0;
+                    totalRecords = -1;
 
                 request.multiple = true;
                 request.connection = this._connection;
@@ -75,9 +74,6 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                             if (totalRecords == -1) {
                                 let row: any = null;
 
-                                if (recordset[i].length > totalPredicateIterations)
-                                    totalPredicateIterations = recordset[i].length;
-
                                 if (Array.isArray(recordset[i]) && recordset[i].length > 0)
                                     row = recordset[i][0];
 
@@ -92,6 +88,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                             results = recordset[i];
                         }
 
+                        // should really validate this.query to see if operators Where, Skip, Take, OrderBy etc comes in correct order otherwhise it's not supported for this kind of database
                         let where = this.query.operations.first(WhereOperator),
                             predicate: (entity: TEntity) => boolean,
                             entities: Array<TEntity>;

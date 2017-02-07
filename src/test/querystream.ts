@@ -5,6 +5,9 @@ import * as MsSql from 'mssql';
 import { QueryStream } from './../db/querystream';
 import { RequestMock } from './base/requestmock';
 
+import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
+import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
+
 describe("When using QueryStream for MsSql queries", () => {
     var myQuery: Select,
         data: Array<any>;
@@ -45,6 +48,63 @@ describe("When using QueryStream for MsSql queries", () => {
                 assert.equal(recordset.records.length, 5);
                 assert.equal(recordset.records[0].name, "JKL");
             });
+    })
+
+    it("should handle paging with total count for in-memory paging", () => {
+        myQuery = new Select([]);
+        myQuery.query.where(it => it.no > 5).skip(3).take(5);
+
+        myQuery.data = data
+            .map(el => {
+                return {
+                    no: el.no,
+                    name: el.name,
+                    pagingTotalCount: 8
+                };
+            }); // totalLength is only available for stream when we have a column named pagingTotalCount (for optimizations)
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+                assert.equal(recordset.totalLength, 8);
+                assert.equal(recordset.records[0].name, "YZÆ");
+            })
+    })
+
+    it("should handle paging with total count for database paging", () => {
+        myQuery = new Select([]);
+        myQuery.query.where(it => it.no > 5).skip(3).take(5);
+
+
+        // since database is doing its paging we should remove the operators
+        let skip = myQuery.query.operations.first(SkipOperator);
+        let take = myQuery.query.operations.first(TakeOperator);
+
+        myQuery.query.operations.remove(skip);
+        myQuery.query.operations.remove(take);
+
+        // faking database paging now
+        data = data
+            .map(el => {
+                return {
+                    no: el.no,
+                    name: el.name,
+                    pagingTotalCount: 8
+                };
+            })
+            .filter(it => {
+                return it.no > 5
+            })
+            .slice((<SkipOperator<IModel>>skip).count, (<TakeOperator<IModel>>take).count + (<TakeOperator<IModel>>take).count);
+
+        myQuery.data = data;
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+                assert.equal(recordset.totalLength, 8);
+                assert.equal(recordset.records[0].name, "YZÆ");
+            })
     })
 
     it("should be able to skip rows", () => {
@@ -151,7 +211,7 @@ class Select extends QueryStream<IModel>
     // for mocking
     public shouldFail = false;
 
-    constructor(private data: Array<any>) {
+    constructor(public data: Array<any>) {
         super();
 
         this.commandText = "SELECT *";

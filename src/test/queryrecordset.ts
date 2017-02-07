@@ -5,6 +5,9 @@ import * as MsSql from 'mssql';
 import { QueryRecordSet, RecordSet } from './../db/queryrecordset';
 import { RequestMock } from './base/requestmock';
 
+import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
+import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
+
 describe("When using QueryRecordSet for MsSql queries", () => {
     var myQuery: SelectOne,
         data: Array<any>;
@@ -50,6 +53,54 @@ describe("When using QueryRecordSet for MsSql queries", () => {
                 assert.equal(recordset.records.length, 5);
                 assert.equal(recordset.records[0].name, "JKL");
             });
+    })
+
+    it("should handle paging with total count for in-memory paging", () => {
+        myQuery = new SelectOne(data);
+        myQuery.query.where(it => it.no > 5).skip(3).take(5);
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+                assert.equal(recordset.totalLength, 8);
+                assert.equal(recordset.records[0].name, "YZÆ");
+            })
+    })
+
+    it("should handle paging with total count for database paging", () => {
+        myQuery = new SelectOne([]);
+        myQuery.query.where(it => it.no > 5).skip(3).take(5);
+
+
+        // since database is doing its paging we should remove the operators
+        let skip = myQuery.query.operations.first(SkipOperator);
+        let take = myQuery.query.operations.first(TakeOperator);
+
+        myQuery.query.operations.remove(skip);
+        myQuery.query.operations.remove(take);
+
+        // faking database paging now
+        data = data
+            .map(el => {
+                return {
+                    no: el.no,
+                    name: el.name,
+                    pagingTotalCount: 8
+                };
+            })
+            .filter(it => {
+                return it.no > 5
+            })
+            .slice((<SkipOperator<IModel>>skip).count, (<TakeOperator<IModel>>take).count + (<TakeOperator<IModel>>take).count);
+
+        myQuery.data = data;
+
+        return myQuery
+            .then(recordset => {
+                assert.equal(recordset.records.length, 5);
+                assert.equal(recordset.totalLength, 8);
+                assert.equal(recordset.records[0].name, "YZÆ");
+            })
     })
 
     it("should be able to skip rows", () => {
@@ -174,7 +225,7 @@ class SelectOne extends QueryRecordSet<IModel>
     // for mocking
     public shouldFail = false;
 
-    constructor(private data: Array<any>, no?: number) {
+    constructor(public data: Array<any>, no?: number) {
         super();
 
         this.input("num", no);
