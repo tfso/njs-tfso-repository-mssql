@@ -90,7 +90,29 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                             results = recordset[i];
                         }
 
-                        resolve(new RecordSet(recordset ? this.query.toArray(results.map(this.transform)) : [], rowsAffected, Date.now() - timed, totalRecords >= 0 ? (totalPredicateIterations > totalRecords ? totalPredicateIterations : totalRecords) : undefined));
+                        let where = this.query.operations.first(WhereOperator),
+                            predicate: (entity: TEntity) => boolean,
+                            entities: Array<TEntity>;
+
+                        if (where) {
+                            this.query.operations.remove(where);
+
+                            predicate = ((op: WhereOperator<TEntity>) => {
+                                return (entity: TEntity) => {
+                                    return op.predicate.apply({}, [entity].concat(op.parameters));
+                                }
+                            })(<WhereOperator<TEntity>>where);
+                        }
+
+                        entities = results.map(this.transform);
+                        if (predicate) {
+                            entities = entities.filter(predicate);
+
+                            if (this.query.operations.first(SkipOperator) || this.query.operations.first(TakeOperator))
+                                totalRecords = entities.length;
+                        }
+
+                        resolve(new RecordSet(recordset ? this.query.toArray(entities) : [], rowsAffected, Date.now() - timed, totalRecords >= 0 ? totalRecords : undefined));
                     }
                     catch (ex) {
                         reject(ex);
