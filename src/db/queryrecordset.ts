@@ -3,6 +3,8 @@ import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
 import { WhereOperator } from 'tfso-repository/lib/linq/operators/whereoperator';
+import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
+import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
 
 export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
