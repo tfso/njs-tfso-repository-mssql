@@ -50,7 +50,8 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                     totalRecords: number = -1,
                     predicate: (entity: TEntity) => boolean,
                     timed: number,
-                    cancelled: boolean = false;
+                    cancelled: boolean = false,
+                    completed: boolean = false;
 
                 request.stream = true;
                 request.multiple = true;
@@ -112,12 +113,16 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                                 totalRecords = -2;
                         }
 
-                        entity = this.transform(row);
+                        if (completed == false) {
+                            entity = this.transform(row);
 
-                        if (predicate(entity) === true) {
-                            if (skip == null || ++skipped > skip) {
-                                if (take == null || ++taken <= take)
-                                    records.push(entity);
+                            if (predicate(entity) === true) {
+                                if (skip == null || ++skipped > skip) {
+                                    if (take == null || ++taken <= take)
+                                        records.push(entity);
+                                    else
+                                        completed = true;
+                                }
                             }
                         }
                     }
