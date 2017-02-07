@@ -1,6 +1,6 @@
 {
   "name": "tfso-repository-mssql",
-  "version": "0.0.0",
+  "version": "1.0.39",
   "description": "Simplified Query classes for converting from/to MsSql database",
   "author": {
     "name": "Nicolai"
