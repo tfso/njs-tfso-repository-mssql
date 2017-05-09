@@ -65,11 +65,7 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                 for (let operator of this.query.operations.values()) {
 
                     if (predicate == null && operator instanceof WhereOperator)
-                        predicate = ((op: WhereOperator<TEntity>) => {
-                            return (entity: TEntity) => {
-                                return op.predicate.apply({}, [entity].concat(op.parameters));
-                            }
-                        })(<WhereOperator<TEntity>>operator);
+                        predicate = operator.predicate;
 
                     else if (skip == null && operator instanceof SkipOperator)
                         skip = (<SkipOperator<TEntity>>operator).count;

@@ -96,11 +96,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                         if (where) {
                             this.query.operations.remove(where);
 
-                            predicate = ((op: WhereOperator<TEntity>) => {
-                                return (entity: TEntity) => {
-                                    return op.predicate.apply({}, [entity].concat(op.parameters));
-                                }
-                            })(<WhereOperator<TEntity>>where);
+                            predicate = where.predicate;
                         }
 
                         entities = results.map(this.transform);
