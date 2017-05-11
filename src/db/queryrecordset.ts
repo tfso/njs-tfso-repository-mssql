@@ -27,6 +27,10 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
         }
     }
 
+    protected get readLock(): boolean {
+        return this._transaction ? true : false;
+    }
+
     protected input(name: string, value: any): void
     protected input(name: string, type: any, value: any): void
     protected input(name: string, type: any, value?: any): void {
