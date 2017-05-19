@@ -33,7 +33,6 @@
     <Content Include="README.md" />
     <Content Include="appveyor.yml" />
     <Content Include="tsconfig.json" />
-    <Content Include="typings.json" />
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\db\connection.ts" />
     <TypeScriptCompile Include="src\db\queryrecordset.ts" />

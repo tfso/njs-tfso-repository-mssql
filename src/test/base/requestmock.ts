@@ -23,17 +23,17 @@ export class RequestMock extends MsSql.Request {
                 break;
 
             case 1:
-                if (this.listenerCount('done') > 0) {
+                if (super.listenerCount('done') > 0) {
                     if (this.shouldFail) {
-                        this.emit('error', new Error('Internal MsSql error'));
+                        super.emit('error', new Error('Internal MsSql error'));
                     } else {
-                        this.emit('recordset', Object.getOwnPropertyNames(this.data[0]));
+                        super.emit('recordset', Object.getOwnPropertyNames(this.data[0]));
 
                         for (let i = 0; i < this.data.length; i++) {
-                            this.emit('row', this.data[i]);
+                            super.emit('row', this.data[i]);
                         }
                     }
-                    this.emit('done', 0);
+                    super.emit('done', 0);
 
                     return Promise.resolve();
                 } else {
@@ -42,7 +42,7 @@ export class RequestMock extends MsSql.Request {
         }
     }
 
-    public batch(batch: string): Promise<MsSql.recordSet>;
+    public batch<Entity>(batch: string): Promise<MsSql.IRecordSet<Entity>>;
     public batch<Entity>(batch: string): Promise<Entity[]>;
     public batch(batch: string, callback: (err?: any, recordset?: any) => void): void;
     public batch<Entity>(batch: string, callback: (err?: any, recordset?: Entity[]) => void): void;
@@ -56,8 +56,8 @@ export class RequestMock extends MsSql.Request {
         }
     }
 
-    public bulk(table: MsSql.Table): Promise<void>;
-    public bulk(table: MsSql.Table, callback: (err: any, rowCount: any) => void): void;
+    public bulk(table: MsSql.Table): Promise<number>;
+    public bulk(table: MsSql.Table, callback: (err: Error, rowCount: any) => void): void;
     public bulk() {
         switch (arguments.length) {
             case 2:

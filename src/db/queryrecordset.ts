@@ -66,7 +66,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                         request.input(param.name, param.type, param.value);
                 }
 
-                request.query(this.commandText, (err, recordset, rowsAffected) => {
+                request.query<any>(this.commandText, (err, recordset, rowsAffected) => {
                     if (err)
                         return reject(err);
 
@@ -74,7 +74,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                         let results: Array<any> = [];
 
                         for (let i = 0; i < recordset.length; i++) {
-                            // go through each recordst and check for totalRecords
+                            // go through each recordset and check for totalRecords
                             if (totalRecords == -1) {
                                 let row: any = null;
 
