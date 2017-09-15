@@ -63,20 +63,35 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                 request.connection = this._connection;
                 request.transaction = this._transaction;
 
-                var skip: number = undefined, skipped: number = 0,
-                    take: number = undefined, taken: number = 0;
+                var skip: number = undefined, skipped: number = 0, skipOperator: SkipOperator<TEntity> = null,
+                    take: number = undefined, taken: number = 0, takeOperator: TakeOperator<TEntity> = null;
 
-                for (let operator of this.query.operations.values()) {
-
-                    if (predicate == null && operator instanceof WhereOperator)
-                        predicate = operator.predicate;
+                for (let operator of this.query.operations.values())
+                {
+                    if (operator instanceof WhereOperator)
+                    {
+                        if (predicate == null)
+                            predicate = operator.predicate;
+                        else
+                            break;
+                    }
 
                     else if (skip == null && operator instanceof SkipOperator)
+                    {
+                        skipOperator = operator;
                         skip = (<SkipOperator<TEntity>>operator).count;
+                    }
 
                     else if (take == null && operator instanceof TakeOperator)
+                    {
+                        takeOperator = operator;
                         take = (<TakeOperator<TEntity>>operator).count;
+                    }
                 }
+
+                if (skipOperator != null) this.query.operations.remove(skipOperator); // we are manually skipping, remove it from enumerable
+                if (takeOperator != null) this.query.operations.remove(takeOperator); // we are manually taking, remove it from enumerable
+
 
                 if (predicate == null)
                     predicate = (entity) => true;
