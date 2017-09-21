@@ -70,11 +70,6 @@ export default class Connection {
 
                     await this._transaction.rollback();
 
-                    this._transaction = null;
-
-                    if (this._connection && this._connection.connected)
-                        await this._connection.close();
-
                     break;
                 }
                 catch (ex)
@@ -92,8 +87,12 @@ export default class Connection {
                 }
             }
 
-            if (error)
-                throw error;
+            this._transaction = null;
+
+            if (this._connection && this._connection.connected)
+                await this._connection.close();
+
+            throw error;
         }
         else {
             this._transaction = null;
