@@ -22,95 +22,86 @@ export default class Connection {
         this._connectionString = Promise.resolve(connectionString);
     }
 
-    public beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                if (this._transaction)
-                    reject(new Error('SqlConnection has a active transaction'));
+    public async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
+        
+        if (this._transaction)
+            throw new Error('SqlConnection has a active transaction');
 
-                this._connectionString
-                    .then((connectionString) => {
-                        this._connection = new MsSql.Connection(connectionString);
-                        this._transaction = new MsSql.Transaction(this._connection);
+        let connectionString = await this._connectionString
+            
+        this._connection = new MsSql.Connection(connectionString);
+        this._transaction = new MsSql.Transaction(this._connection);
+        this._rolledback = false;
 
-                        this._rolledback = false;
-
-                        this._transaction.on('rollback', (aborted) => {
-                            this._rolledback = true;
-                        });
-
-                        this._connection.connect()
-                            .then(() => {
-                                return this._transaction.begin(this.getIsolationLevel(isolationLevel));
-                            })
-                            .then(() => {
-                                resolve();
-                            })
-                            .catch((err) => {
-                                reject(err);
-                            });
-                    }, (err) => {
-                        reject(err);
-                    });
-            }
-            catch (ex) {
-                reject(ex);
-            }
-        })
-    }
-
-    public commitTransaction(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                if (this._transaction == null)
-                    reject(new Error('SqlConnection has no active transaction'));
-
-
-                this._transaction.commit((err) => {
-                    this._transaction = null;
-
-                    if (this._connection && this._connection.connected)
-                        this._connection.close();
-
-                    return err ? reject(err) : resolve();
-                });
-            }
-            catch (ex) {
-                reject(ex);
-            }
+        this._transaction.on('rollback', (aborted) => {
+            this._rolledback = true;
         });
+
+        await this._connection.connect();
+        await this._transaction.begin(this.getIsolationLevel(isolationLevel));           
     }
 
-    public rollbackTransaction(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                if (this._transaction == null)
-                    reject(new Error('SqlConnection has no active transaction'));
+    public async commitTransaction(): Promise<void> {
+        
+        if (this._transaction == null)
+            throw new Error('SqlConnection has no active transaction');
 
-                if (!this._rolledback) {
-                    this._transaction.rollback((err) => {
-                        this._transaction = null;
+        await this._transaction.commit();
 
-                        if (this._connection && this._connection.connected)
-                            this._connection.close();
+        this._transaction = null;
 
-                        return err ? reject(err) : resolve();
-                    });
-                }
-                else {
+        if (this._connection && this._connection.connected)
+            this._connection.close();
+    }
+
+    public async rollbackTransaction(): Promise<void> {       
+        if (this._transaction == null)
+            throw new Error('SqlConnection has no active transaction');
+
+        if (!this._rolledback)
+        {
+            let error: Error;
+
+            for (let tries = 0; tries < 5; tries++)
+            {
+                try
+                {
+                    error = null; // reset it for each try
+
+                    await this._transaction.rollback();
+
                     this._transaction = null;
 
                     if (this._connection && this._connection.connected)
-                        this._connection.close();
+                        await this._connection.close();
 
-                    resolve();
+                    break;
+                }
+                catch (ex)
+                {
+                    error = ex;
+
+                    if (ex.name == 'TransactionError')
+                    {
+                        await this.delay(1000);
+
+                        continue;
+                    }
+
+                    throw ex;
                 }
             }
-            catch (ex) {
-                reject(ex);
-            }
 
-        })
+            if (error)
+                throw error;
+        }
+        else {
+            this._transaction = null;
+
+            if (this._connection && this._connection.connected)
+                await this._connection.close();
+        }
+            
     }
 
     public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
@@ -187,5 +178,18 @@ export default class Connection {
             default:
                 return MsSql.ISOLATION_LEVEL.READ_COMMITTED;
         }
+    }
+
+    private delay(ms: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try
+            {
+                setTimeout(() => resolve, ms || 1);
+            }
+            catch (ex)
+            {
+                reject(ex);
+            }
+        })
     }
 }
