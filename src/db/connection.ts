@@ -13,7 +13,7 @@ export enum IsolationLevel {
 export default class Connection {
     private _connectionString: PromiseLike<MsSql.config>;
     
-    private _connection: MsSql.Connection = null;
+    private _connection: MsSql.ConnectionPool = null;
     private _transaction: MsSql.Transaction = null;
 
     private _rolledback = false;
@@ -29,7 +29,7 @@ export default class Connection {
 
         let connectionString = await this._connectionString
             
-        this._connection = new MsSql.Connection(connectionString);
+        this._connection = new MsSql.ConnectionPool(connectionString);
         this._transaction = new MsSql.Transaction(this._connection);
         this._rolledback = false;
 
@@ -104,7 +104,7 @@ export default class Connection {
     }
 
     public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
-    public execute<U>(work: (connection: MsSql.Connection) => IRecordSet<U> | PromiseLike<IRecordSet<U>>): Promise<IRecordSet<U>>
+    public execute<U>(work: (connection: MsSql.ConnectionPool) => IRecordSet<U> | PromiseLike<IRecordSet<U>>): Promise<IRecordSet<U>>
     public execute<U>(executable: any): Promise<IRecordSet<U>> {
         return new Promise((resolve, reject) => {
             try {
@@ -122,7 +122,7 @@ export default class Connection {
                 else {
                     this._connectionString
                         .then((connectionString) => {
-                            var connection = new MsSql.Connection(connectionString);
+                            var connection = new MsSql.ConnectionPool(connectionString);
 
                             connection.connect()
                                 .then(() => {

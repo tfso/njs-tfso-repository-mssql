@@ -5,6 +5,7 @@ import * as MsSql from 'mssql';
 import { QueryStream } from './../db/querystream';
 import { RequestMock } from './base/requestmock';
 
+import { Enumerable } from 'tfso-repository';
 import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
 import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
 

@@ -7,23 +7,24 @@ import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
 import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
 
 export abstract class QueryStream<TEntity> extends Query<TEntity> {
-    private _connection: MsSql.Connection;
+    private _connection: MsSql.ConnectionPool;
     private _transaction: MsSql.Transaction;
 
-    constructor(connection?: MsSql.Connection | MsSql.Transaction) {
+    constructor(connection?: MsSql.ConnectionPool | MsSql.Transaction) {
         super();
 
         if (connection != null)
             this.connection = connection;
     }
 
-    public set connection(connection: MsSql.Transaction | MsSql.Connection) {
+    public set connection(connection: MsSql.Transaction | MsSql.ConnectionPool) {
         if (connection instanceof MsSql.Transaction) {
             this._transaction = connection;
-            this._connection = connection.connection;
+            this._connection = null;
         }
         else {
             this._connection = connection;
+            this._transaction = null;
         }
     }
 
@@ -41,14 +42,18 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
         this.parameters[name] = { name: name, type: type, value: value };
     }
 
+
+    protected createRequest(): MsSql.Request
+    protected createRequest(connection: MsSql.ConnectionPool): MsSql.Request
+    protected createRequest(transaction: MsSql.Transaction): MsSql.Request
     protected createRequest(): MsSql.Request {
-        return new MsSql.Request();
+        return new MsSql.Request(arguments[0]);
     }
 
     protected executeQuery(): Promise<IRecordSet<TEntity>> {
         return new Promise((resolve, reject) => {
             try {
-                let request = this.createRequest(), // thread safe as we have a request object for each promise
+                let request: MsSql.Request,
                     error: Error = null,
                     records: Array<TEntity> = [],
                     totalRecords: number = -1,
@@ -58,10 +63,15 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                     cancelled: boolean = false,
                     completed: boolean = false;
 
+                // thread safe as we have a request object for each promise
+                if(this._transaction != null)
+                    request = this.createRequest(this._transaction);
+                else
+                    request = this.createRequest(this._connection);
+
+
                 request.stream = true;
-                request.multiple = true;
-                request.connection = this._connection;
-                request.transaction = this._transaction;
+                
 
                 var skip: number = undefined, skipped: number = 0, skipOperator: SkipOperator<TEntity> = null,
                     take: number = undefined, taken: number = 0, takeOperator: TakeOperator<TEntity> = null;

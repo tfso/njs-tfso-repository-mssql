@@ -1,0 +1,88 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"mocha.env": {
+			"TS_NODE_COMPILER": "${workspaceRoot}/node_modules/typescript/bin/tsc"
+		},
+		"launch": {
+			"verison": "0.2.0",
+			"configurations": [
+				{
+					"type": "node",
+					"request": "launch",
+					"name": "Run program",
+					"args": ["src/index.ts"],
+					"runtimeArgs": ["-r", "ts-node/register"],
+					"cwd": "${workspaceRoot}",
+					"protocol": "inspector",
+					"internalConsoleOptions": "openOnSessionStart"
+				},
+				{
+					"type": "node",
+					"request": "launch",
+					"name": "Run current file",
+					"args": ["${relativeFile}"],
+					"runtimeArgs": ["-r", "ts-node/register"],
+					"cwd": "${workspaceRoot}",
+					"protocol": "inspector",
+					"internalConsoleOptions": "openOnSessionStart"
+				},
+				{
+					"name": "Run mocha",
+					"type": "node",
+					"request": "launch",
+					"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+					"stopOnEntry": false,
+					"args": ["--no-timeouts", "--compilers", "ts:ts-node/register", "--compiler", "--require", "ts-node/register", "${workspaceRoot}/src/test/*.ts"],
+					"cwd": "${workspaceRoot}",
+					"protocol": "inspector"
+				}
+			]
+		},
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/.idea": true,
+			"**/.vs": true,
+			"**/.vscode": true,
+			"lib": true,
+			"node_modules": true,
+			"build": true,
+			"bin": true,
+			"coverage": true,
+			"TestResults": true,
+			"obj": true,
+			"typings": true
+		},
+		"typescript.tsdk": "./node_modules/typescript/lib",
+		"mocha.options": {
+			"compilers": {
+				"ts": "ts-node/register"
+			}
+		},			
+		"mocha.files.glob": "src/test/*.ts",
+		"mocha.requires": [
+			"ts-node/register"
+		],
+		//Mocha: this option allows you to enable/disable lens decorations and set update threshold "
+		"mocha.sideBarOptions": {
+			"default": {
+				"lens": true, // -> enable/disable lens
+				"decoration": true, // -> enable/disable decoration
+				"autoUpdateTime": 2000 // -> set timeout between each decorations and lens updates during test writing 
+			}
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"maty.vscode-mocha-sidebar"
+		]
+	}
+}

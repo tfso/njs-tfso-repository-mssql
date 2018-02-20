@@ -7,17 +7,15 @@ export class RequestMock extends MsSql.Request {
 
     //public set multiple(value: boolean) {
     //    this._multiple = value;
-    //}
-
-    public query(command: string): Promise<void>;
-    public query<Entity>(command: string): Promise<Entity[]>;
-    public query(command: string, callback: (err?: any, recordset?: any, rowsAffected?: number) => void): void;
-    public query<Entity>(command: string, callback: (err?: any, recordset?: Entity[]) => void): void;
-    public query() {
+    //}   
+    
+    public query<Entity>(command: string): Promise<MsSql.IResult<Entity>>
+    public query<Entity>(command: string, callback: (err?: Error, recordset?: MsSql.IResult<Entity>) => void): void
+    public query<Entity>(): any {
         switch(arguments.length) {
             case 2:
                 if (typeof arguments[1] == 'function') {
-                    (<Function>arguments[1]).apply(arguments[1], [this.shouldFail ? new Error('Internal MsSql error') : null, (this.multiple ? [ this.data ] : this.data), 0]);
+                    (<Function>arguments[1]).apply(arguments[1], [this.shouldFail ? new Error('Internal MsSql error') : null, { recordsets: [ this.data ], rowsAffected: [0], output: {}}]);
                 }
 
                 break;
@@ -36,16 +34,21 @@ export class RequestMock extends MsSql.Request {
                     super.emit('done', 0);
 
                     return Promise.resolve();
-                } else {
-                    return Promise.resolve(this.data);
+                } 
+                else {
+                    return Promise.resolve({
+                        recordsets: [this.data],
+                        rowsAffected: [0],
+                        output: {}
+                    });
                 }
         }
     }
 
-    public batch<Entity>(batch: string): Promise<MsSql.IRecordSet<Entity>>;
-    public batch<Entity>(batch: string): Promise<Entity[]>;
-    public batch(batch: string, callback: (err?: any, recordset?: any) => void): void;
-    public batch<Entity>(batch: string, callback: (err?: any, recordset?: Entity[]) => void): void;
+    public batch(batch: string): Promise<MsSql.IResult<any>>
+    public batch<Entity>(batch: string): Promise<MsSql.IResult<Entity>>
+    public batch(batch: string, callback: (err?: any, recordset?: MsSql.IResult<any>) => void): void
+    public batch<Entity>(batch: string, callback: (err?: any, recordset?: MsSql.IResult<Entity>) => void): void;
     public batch() {
         switch (arguments.length) {
             case 2:
