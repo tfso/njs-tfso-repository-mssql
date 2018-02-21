@@ -1,6 +1,6 @@
 ﻿version: 1.1.{build}
 environment:
-  nodejs_version: "6"
+  nodejs_version: "8"
   access_token:
     secure: sbBna4fwB5pwz2FWSkskL1UJZLvZmSQ5/tItIVC3ESN+gefKxwXIhj0IHXUATpmo
 build:
