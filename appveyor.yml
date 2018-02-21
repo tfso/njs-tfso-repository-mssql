@@ -31,7 +31,7 @@ deploy_script:
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
   - git config --global user.email "post@24sevenoffice.com"
   - git config --global user.name "24SevenOffice"
-  - git add ./lib
+  - git add --force ./lib
   - git commit -a -m "Adding release files"
   - git tag -a %appveyor_build_version% -m "%APPVEYOR_REPO_COMMIT_MESSAGE% %APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED%"
   - git push origin %appveyor_build_version%
