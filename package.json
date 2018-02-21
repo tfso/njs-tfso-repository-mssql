@@ -17,11 +17,11 @@
     "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --reporter spec --recursive lib/test/*.js"
   },
   "dependencies": {
+    "@types/mssql": "^4.0.7",
     "mssql": "^4.1.0"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.39",
-    "@types/mssql": "^4.0.7",
     "@types/node": "^7.0.5",
     "istanbul": "^0.4.4",
     "mocha": "^4.1.0",
