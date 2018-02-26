@@ -31,7 +31,7 @@ export class RequestMock extends MsSql.Request {
                             super.emit('row', this.data[i]);
                         }
                     }
-                    super.emit('done', 0);
+                    super.emit('done', { rowsAffected: [0], output: {} });
 
                     return Promise.resolve();
                 } 
