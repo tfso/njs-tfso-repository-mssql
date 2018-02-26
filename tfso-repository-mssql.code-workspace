@@ -1,6 +1,7 @@
 {
 	"folders": [
 		{
+			"name": "tfso-repository-mssql",
 			"path": "."
 		}
 	],
@@ -17,17 +18,7 @@
 					"name": "Run program",
 					"args": ["src/index.ts"],
 					"runtimeArgs": ["-r", "ts-node/register"],
-					"cwd": "${workspaceRoot}",
-					"protocol": "inspector",
-					"internalConsoleOptions": "openOnSessionStart"
-				},
-				{
-					"type": "node",
-					"request": "launch",
-					"name": "Run current file",
-					"args": ["${relativeFile}"],
-					"runtimeArgs": ["-r", "ts-node/register"],
-					"cwd": "${workspaceRoot}",
+					"cwd": "${workspaceRoot:tfso-repository-mssql}",
 					"protocol": "inspector",
 					"internalConsoleOptions": "openOnSessionStart"
 				},
@@ -35,31 +26,31 @@
 					"name": "Run mocha",
 					"type": "node",
 					"request": "launch",
-					"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+					"program": "${workspaceRoot:tfso-repository-mssql}/node_modules/mocha/bin/_mocha",
 					"stopOnEntry": false,
-					"args": ["--no-timeouts", "--compilers", "ts:ts-node/register", "--compiler", "--require", "ts-node/register", "${workspaceRoot}/src/test/*.ts"],
-					"cwd": "${workspaceRoot}",
+					"args": ["--no-timeouts", "--compilers", "ts:ts-node/register", "--compiler", "--require", "ts-node/register", "${workspaceRoot:tfso-repository-mssql}/src/test/*.ts"],
+					"cwd": "${workspaceRoot:tfso-repository-mssql}",
 					"protocol": "inspector"
 				}
 			]
 		},
 		"files.exclude": {
-			"**/.git": true,
-			"**/.svn": true,
-			"**/.hg": true,
-			"**/CVS": true,
-			"**/.DS_Store": true,
-			"**/.idea": true,
-			"**/.vs": true,
-			"**/.vscode": true,
-			"lib": true,
-			"node_modules": true,
-			"build": true,
-			"bin": true,
-			"coverage": true,
-			"TestResults": true,
-			"obj": true,
-			"typings": true
+			"**/.git": false,
+			"**/.svn": false,
+			"**/.hg": false,
+			"**/CVS": false,
+			"**/.DS_Store": false,
+			"**/.idea": false,
+			"**/.vs": false,
+			"**/.vscode": false,
+			"lib": false,
+			"node_modules": false,
+			"build": false,
+			"bin": false,
+			"coverage": false,
+			"TestResults": false,
+			"obj": false,
+			"typings": false
 		},
 		"typescript.tsdk": "./node_modules/typescript/lib",
 		"mocha.options": {

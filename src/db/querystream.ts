@@ -166,11 +166,11 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                     error = err;
                 });
 
-                request.on('done', (affected) => {
+                request.on('done', (result: MsSql.IResult<TEntity>) => {
                     if (error != null)
                         reject(error);
                     else
-                        resolve(new RecordSet(records, affected, (Date.now() - timed), skip != null ? totalPredicateIterations : (totalRecords >= 0 ? totalRecords : undefined) ));
+                        resolve(new RecordSet(records, result.rowsAffected.reduce( (total, affected) => total += affected, 0), (Date.now() - timed), skip != null ? totalPredicateIterations : (totalRecords >= 0 ? totalRecords : undefined) ));
                 });
 
                 timed = Date.now();
