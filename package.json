@@ -1,6 +1,6 @@
 {
   "name": "tfso-repository-mssql",
-  "version": "0.0.0",
+  "version": "1.1.57",
   "description": "Simplified Query classes for converting from/to MsSql database",
   "author": {
     "name": "Nicolai"
@@ -17,16 +17,10 @@
     "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --reporter spec --recursive lib/test/*.js"
   },
   "dependencies": {
-    "@types/mssql": "^4.0.7",
-    "mssql": "^4.1.0"
+    "@types/mssql": "^4.0.7"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.39",
-    "@types/node": "^7.0.5",
-    "istanbul": "^0.4.4",
-    "mocha": "^4.1.0",
-    "tfso-repository": "tfso/njs-tfso-repository#1.2.114",
-    "ts-node": "^4.0.0",
-    "typescript": "~2.6.2"
+    "@types/node": "^7.0.5"
   }
 }
