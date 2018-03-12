@@ -23,8 +23,7 @@ build_script:
 test_script:
   - mocha --reporter mocha-appveyor-reporter ./lib/test/ --no-exit
 after_test:
-  # remove npm_modules as this should be installed whenever this package is used
-  - FOR /f %%n IN ('dir .\node_modules /d /b /a:d ^| findstr /R /C:"^[A-Za-z].*$"') DO npm uninstall %%n
+  - rmdir .\node_modules /s /q
 deploy_script:
   # git tagging source for github releases in addition to artifact to make npm usage useful
   - rm .gitignore

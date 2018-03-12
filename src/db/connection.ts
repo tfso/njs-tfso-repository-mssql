@@ -78,7 +78,7 @@ export default class Connection {
 
                     if (ex.name == 'TransactionError')
                     {
-                        await this.delay(1000);
+                        await this.delay(200);
 
                         continue;
                     }
@@ -92,15 +92,15 @@ export default class Connection {
             if (this._connection && this._connection.connected)
                 await this._connection.close();
 
-            throw error;
+            if(error)
+                throw error;
         }
         else {
             this._transaction = null;
 
             if (this._connection && this._connection.connected)
                 await this._connection.close();
-        }
-            
+        }   
     }
 
     public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
@@ -179,16 +179,9 @@ export default class Connection {
         }
     }
 
-    private delay(ms: number): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try
-            {
-                setTimeout(() => resolve, ms || 1);
-            }
-            catch (ex)
-            {
-                reject(ex);
-            }
+    private delay(ms: number) {
+        return new Promise((resolve) => {
+            setTimeout(resolve, ms || 1)
         })
     }
 }
