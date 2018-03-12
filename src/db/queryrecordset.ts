@@ -1,4 +1,6 @@
 ﻿import * as MsSql from 'mssql';
+import Repository from 'tfso-repository'
+
 import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 

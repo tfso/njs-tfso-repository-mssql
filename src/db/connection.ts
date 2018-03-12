@@ -22,6 +22,11 @@ export default class Connection {
         this._connectionString = Promise.resolve(connectionString);
     }
 
+    public async close(): Promise<void> {
+        if (this._connection && this._connection.connected)
+            await this._connection.close();
+    }
+
     public async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
         
         if (this._transaction)
@@ -36,7 +41,7 @@ export default class Connection {
         this._transaction.on('rollback', (aborted) => {
             this._rolledback = true;
         });
-
+        
         await this._connection.connect();
         await this._transaction.begin(this.getIsolationLevel(isolationLevel));           
     }
@@ -50,8 +55,8 @@ export default class Connection {
 
         this._transaction = null;
 
-        if (this._connection && this._connection.connected)
-            this._connection.close();
+        // if (this._connection && this._connection.connected)
+        //     await this._connection.close();
     }
 
     public async rollbackTransaction(): Promise<void> {       
@@ -89,8 +94,8 @@ export default class Connection {
 
             this._transaction = null;
 
-            if (this._connection && this._connection.connected)
-                await this._connection.close();
+            // if (this._connection && this._connection.connected)
+            //     await this._connection.close();
 
             if(error)
                 throw error;
@@ -98,62 +103,61 @@ export default class Connection {
         else {
             this._transaction = null;
 
-            if (this._connection && this._connection.connected)
-                await this._connection.close();
+            // if (this._connection && this._connection.connected)
+            //     await this._connection.close();
         }   
     }
 
     public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
     public execute<U>(work: (connection: MsSql.ConnectionPool) => IRecordSet<U> | PromiseLike<IRecordSet<U>>): Promise<IRecordSet<U>>
-    public execute<U>(executable: any): Promise<IRecordSet<U>> {
-        return new Promise((resolve, reject) => {
-            try {
-                if (this._transaction != null) {
-                    if (this._connection.connected == false)
-                        throw new Error('SqlConnection is missing an active connection for this transaction');
+    public async execute<U>(executable: any): Promise<IRecordSet<U>> {
+        try {
+            if (this._transaction != null) {
+                if (this._connection.connected == false)
+                    throw new Error('SqlConnection is missing an active connection for this transaction');
 
-                    if (typeof executable == 'function') {
-                        Promise.resolve(executable(this._transaction || this._connection)).then(resolve).catch(reject);
-                    } else {
-                        executable.connection = this._transaction || this._connection;
-                        Promise.resolve(executable).then(resolve).catch(reject);
-                    }
+                if (typeof executable == 'function') {
+                    return Promise.resolve(executable(this._transaction || this._connection))
                 }
                 else {
-                    this._connectionString
-                        .then((connectionString) => {
-                            var connection = new MsSql.ConnectionPool(connectionString);
-
-                            connection.connect()
-                                .then(() => {
-                                    if (typeof executable == 'function') {
-                                        return Promise.resolve(executable(connection))
-                                    } else {
-                                        executable.connection = connection;
-                                        return executable;
-                                    }
-                                })
-                                .then((result) => {
-                                    if (connection.connected)
-                                        connection.close();
-
-                                    resolve(result);
-                                })
-                                .catch((ex) => {
-                                    if (connection.connected)
-                                        connection.close();
-
-                                    reject(ex);
-                                })
-                        }, (err) => {
-                            reject(err);
-                        });
+                    executable.connection = this._transaction || this._connection
+                    return Promise.resolve(executable)
                 }
             }
-            catch (ex) {
-                reject(ex);
+            else 
+            {
+                let connectionString = await this._connectionString,
+                    connection = new MsSql.ConnectionPool(Object.assign(connectionString));
+
+                try {
+                    await connection.connect()
+
+                    let result;
+
+                    if (typeof executable == 'function') {
+                        result = await Promise.resolve(executable(connection))
+                    } else {
+                        executable.connection = connection;
+                        result = await Promise.resolve(executable)
+                    }
+                
+                    if (connection.connected)
+                        await connection.close();
+
+                    return result
+                }
+                catch(ex) {
+                    if (connection.connected)
+                        await connection.close();
+
+                    throw ex
+                }
             }
-        });
+        }
+        catch (ex) {
+            throw ex
+        }
+       
     }
 
     private getIsolationLevel(isolationLevel: IsolationLevel): MsSql.IIsolationLevel {
