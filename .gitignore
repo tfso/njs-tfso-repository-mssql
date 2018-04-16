@@ -41,6 +41,7 @@ jspm_packages
 # NTVS is not respecting outDir and rootDir in tsconfig, until 
 # that is fixed we make our /lib at release time
 # (https://github.com/Microsoft/nodejstools/issues/1243)
+lib/
 src/**/*.js
 src/**/*.js.map
 src/**/*.d.ts

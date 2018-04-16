@@ -1,4 +1,6 @@
 ﻿import * as MsSql from 'mssql';
+import Enumerable from 'tfso-repository'
+
 import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
@@ -68,7 +70,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
 
                 request.query<any>(this.commandText, (err, recordset, rowsAffected) => {
                     if (err)
-                        return reject(err);
+                        return reject(this.transformError(err));
 
                     try {
                         let results: Array<any> = [];
@@ -114,18 +116,34 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
                         resolve(new RecordSet(recordset ? this.query.toArray(entities) : [], rowsAffected, Date.now() - timed, totalRecords >= 0 ? totalRecords : undefined));
                     }
                     catch (ex) {
-                        reject(ex);
+                        reject(this.transformError(ex));
                     }
                 });
             }
             catch (ex) {
-                reject(ex);
+                reject(this.transformError(ex));
             }
-
         })
     }
 
     protected abstract transform(record: any): TEntity;
+
+    private transformError(err: Error): Error {
+        try {
+            return Object.assign(err, { 
+                _sql: this.commandText, 
+                _parameters: Object
+                    .entries(this.parameters)
+                    .reduce((out, [key, { value }]) => { 
+                        out[key] = value; 
+                        return out 
+                    }, {}) 
+            })
+        }
+        catch(ex) {
+            return err
+        }
+    }
 }
 
 export default QueryRecordSet

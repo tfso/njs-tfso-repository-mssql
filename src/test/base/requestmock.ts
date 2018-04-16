@@ -10,7 +10,7 @@ export class RequestMock extends MsSql.Request {
     //}
 
     public query(command: string): Promise<void>;
-    public query<Entity>(command: string): Promise<Entity[]>;
+    public query<Entity>(command: string): Promise<MsSql.IRecordSet<Entity[]>>;
     public query(command: string, callback: (err?: any, recordset?: any, rowsAffected?: number) => void): void;
     public query<Entity>(command: string, callback: (err?: any, recordset?: Entity[]) => void): void;
     public query() {

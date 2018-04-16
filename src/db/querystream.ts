@@ -1,4 +1,6 @@
 ﻿import * as MsSql from 'mssql';
+import Enumerable from 'tfso-repository'
+
 import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
@@ -158,7 +160,7 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
 
                 request.on('done', (affected) => {
                     if (error != null)
-                        reject(error);
+                        reject(this.transformError(error));
                     else
                         resolve(new RecordSet(records, affected, (Date.now() - timed), skip != null ? totalPredicateIterations : (totalRecords >= 0 ? totalRecords : undefined) ));
                 });
@@ -167,12 +169,29 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                 request.query(this.commandText);
             }
             catch (ex) {
-                reject(ex);
+                reject(this.transformError(ex));
             }
         })
     }
 
     protected abstract transform(record: any): TEntity;
+
+    private transformError(err: Error): Error {
+        try {
+            return Object.assign(err, { 
+                _sql: this.commandText, 
+                _parameters: Object
+                    .entries(this.parameters)
+                    .reduce((out, [key, { value }]) => { 
+                        out[key] = value; 
+                        return out 
+                    }, {}) 
+            })
+        }
+        catch(ex) {
+            return err
+        }
+    }
 }
 
 export default QueryStream
