@@ -78,7 +78,7 @@ export default class Connection {
 
                     if (ex.name == 'TransactionError')
                     {
-                        await this.delay(1000);
+                        await this.delay(200);
 
                         continue;
                     }
@@ -92,7 +92,8 @@ export default class Connection {
             if (this._connection && this._connection.connected)
                 await this._connection.close();
 
-            throw error;
+            if(error)
+                throw error;
         }
         else {
             this._transaction = null;
@@ -122,32 +123,37 @@ export default class Connection {
                 else {
                     this._connectionString
                         .then((connectionString) => {
-                            var connection = new MsSql.Connection(connectionString);
+                            try {
+                                var connection = new MsSql.Connection(connectionString);
 
-                            connection.connect()
-                                .then(() => {
-                                    if (typeof executable == 'function') {
-                                        return Promise.resolve(executable(connection))
-                                    } else {
-                                        executable.connection = connection;
-                                        return executable;
-                                    }
-                                })
-                                .then((result) => {
-                                    if (connection.connected)
-                                        connection.close();
+                                return connection.connect()
+                                    .then(() => {
+                                        if (typeof executable == 'function') {
+                                            return Promise.resolve(executable(connection))
+                                        } else {
+                                            executable.connection = connection;
+                                            return executable;
+                                        }
+                                    })
+                                    .then((result) => {
+                                        if (connection.connected)
+                                            connection.close();
 
-                                    resolve(result);
-                                })
-                                .catch((ex) => {
-                                    if (connection.connected)
-                                        connection.close();
+                                        resolve(result);
+                                    })
+                                    .catch((ex) => {
+                                        if (connection.connected)
+                                            connection.close();
 
-                                    reject(ex);
-                                })
+                                        reject(ex);
+                                    })
+                            }
+                            catch(ex) {
+                                reject(ex);
+                            }
                         }, (err) => {
                             reject(err);
-                        });
+                        })
                 }
             }
             catch (ex) {
