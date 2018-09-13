@@ -1,4 +1,4 @@
-﻿import * as MsSql from 'mssql';
+import * as MsSql from 'mssql';
 import { Query } from 'tfso-repository/lib/repository/db/query';
 import { IRecordSet, RecordSet } from 'tfso-repository/lib/repository/db/recordset';
 
@@ -189,7 +189,7 @@ export default class Connection {
         return new Promise<void>((resolve, reject) => {
             try
             {
-                setTimeout(() => resolve, ms || 1);
+                setTimeout(resolve, ms || 1);
             }
             catch (ex)
             {
