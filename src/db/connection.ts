@@ -11,6 +11,8 @@ export enum IsolationLevel {
 }
 
 export default class Connection {
+    private static connectionPool: Map<string, MsSql.Connection> = new Map()
+
     private _connectionString: PromiseLike<MsSql.config>;
     
     private _connection: MsSql.Connection = null;
@@ -104,6 +106,24 @@ export default class Connection {
             
     }
 
+    private async getConnection(connectionString: MsSql.config): Promise<MsSql.Connection> { 
+        let pool: MsSql.Connection,
+            key = `${connectionString.server};${connectionString.database};${connectionString.user}`
+
+        if( (pool = Connection.connectionPool.get(key)) == null) {
+            Connection.connectionPool.set(key, pool = new MsSql.Connection(connectionString))
+
+            pool.on('error', () => {
+                Connection.connectionPool.delete(key)
+            })
+        }
+
+        if(pool.connected == false)
+            await pool.connect()
+   
+        return pool
+    }
+
     public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
     public execute<U>(work: (connection: MsSql.Connection) => IRecordSet<U> | PromiseLike<IRecordSet<U>>): Promise<IRecordSet<U>>
     public execute<U>(executable: any): Promise<IRecordSet<U>> {
@@ -124,10 +144,8 @@ export default class Connection {
                     this._connectionString
                         .then((connectionString) => {
                             try {
-                                var connection = new MsSql.Connection(connectionString);
-
-                                return connection.connect()
-                                    .then(() => {
+                                return this.getConnection(connectionString)
+                                    .then((connection) => {
                                         if (typeof executable == 'function') {
                                             return Promise.resolve(executable(connection))
                                         } else {
@@ -136,17 +154,18 @@ export default class Connection {
                                         }
                                     })
                                     .then((result) => {
-                                        if (connection.connected)
-                                            connection.close();
+                                        // if (connection.connected)
+                                        //     connection.close();
 
                                         resolve(result);
                                     })
                                     .catch((ex) => {
-                                        if (connection.connected)
-                                            connection.close();
+                                        // if (connection.connected)
+                                        //     connection.close();
 
                                         reject(ex);
                                     })
+                                    
                             }
                             catch(ex) {
                                 reject(ex);
