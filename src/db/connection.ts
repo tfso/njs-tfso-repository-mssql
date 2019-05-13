@@ -118,10 +118,52 @@ export default class Connection {
             })
         }
 
-        if(pool.connected == false)
-            await pool.connect()
-   
+        await this.assertConnected(pool, connectionString.connectionTimeout || 15000)
+
         return pool
+    }
+
+    private async assertConnected(pool: MsSql.Connection, timeout: number = 15000): Promise<void> {
+        if(pool.connecting == true) {
+            return new Promise<void>(async (resolve, reject) => {
+                let time = Number(timeout) || 15000,
+                    interval = 100,
+                    thread: NodeJS.Timer
+
+                try {
+                    let asserter = async() => {
+                        try {
+                            if(pool.connected == true) {
+                                if(thread)
+                                    clearTimeout(thread)
+
+                                resolve()
+                            }
+                            else if( (time -= interval) < 0) {
+                                if(thread)
+                                    clearTimeout(thread)
+
+                                reject(new Error(`Connection could not be established within timeout`))
+                            }
+                        }
+                        catch(ex) {
+                            reject(ex)
+                        }
+                    }
+
+                    thread = setInterval(asserter, interval)
+                }
+                catch(ex) {
+                    if(thread)
+                        clearTimeout(thread);
+
+                    reject(ex)
+                }
+            })
+        }
+        else if(pool.connected == false) {
+            await pool.connect()
+        }
     }
 
     public execute<U>(query: Query<U>): Promise<IRecordSet<U>>
