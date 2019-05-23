@@ -108,7 +108,7 @@ export default class Connection {
 
     private async getConnection(connectionString: MsSql.config): Promise<MsSql.Connection> { 
         let pool: MsSql.Connection,
-            key = `${connectionString.server};${connectionString.database};${connectionString.user}`
+            key = `${connectionString.server};${connectionString.port || -1};${connectionString.database};${connectionString.user}`
 
         if( (pool = Connection.connectionPool.get(key)) == null) {
             Connection.connectionPool.set(key, pool = new MsSql.Connection(connectionString))
