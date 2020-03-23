@@ -1,0 +1,20 @@
+import * as MsSql from 'mssql';
+import { Query } from 'tfso-repository/lib/repository/db/query';
+import { RecordSet } from 'tfso-repository/lib/repository/db/recordset';
+export declare abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
+    private _connection;
+    private _transaction;
+    private _ignoreReadLocks;
+    constructor(connection?: MsSql.Connection | MsSql.Transaction, ignoreReadLock?: Array<MsSql.IIsolationLevel>);
+    constructor(ignoreReadLock?: Array<MsSql.IIsolationLevel>);
+    set connection(connection: MsSql.Transaction | MsSql.Connection);
+    protected get readLock(): boolean;
+    protected input(name: string, value: any): void;
+    protected input(name: string, type: any, value: any): void;
+    protected createRequest(): MsSql.Request;
+    protected executeQuery(): Promise<RecordSet<TEntity>>;
+    protected abstract transform(record: any): TEntity;
+    private transformError;
+}
+export default QueryRecordSet;
+export { RecordSet };
