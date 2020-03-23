@@ -227,6 +227,10 @@ export default class Connection {
     }
 
     private getIsolationLevel(isolationLevel: IsolationLevel): MsSql.IIsolationLevel {
+        return Connection.getIsolationLevel(isolationLevel)
+    }
+
+    public static getIsolationLevel(isolationLevel: IsolationLevel): MsSql.IIsolationLevel {
 
         switch (isolationLevel) {
             case IsolationLevel.ReadCommitted:

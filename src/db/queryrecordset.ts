@@ -8,14 +8,16 @@ import { WhereOperator } from 'tfso-repository/lib/linq/operators/whereoperator'
 import { SkipOperator } from 'tfso-repository/lib/linq/operators/skipoperator';
 import { TakeOperator } from 'tfso-repository/lib/linq/operators/takeoperator';
 
+import Connection, { IsolationLevel } from './connection'
+
 export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
     private _transaction: MsSql.Transaction;
 
     private _ignoreReadLocks: Array<MsSql.IIsolationLevel> = []
 
-    constructor(connection?: MsSql.Connection | MsSql.Transaction, ignoreReadLock?: Array<MsSql.IIsolationLevel>) 
-    constructor(ignoreReadLock?: Array<MsSql.IIsolationLevel>) 
+    constructor(connection?: MsSql.Connection | MsSql.Transaction, ignoreReadLock?: Array<IsolationLevel>) 
+    constructor(ignoreReadLock?: Array<IsolationLevel>) 
     constructor() {
         super();
 
@@ -45,7 +47,7 @@ export abstract class QueryRecordSet<TEntity> extends Query<TEntity> {
         if (connection != null)
             this.connection = connection;
 
-        this._ignoreReadLocks.push(...ignoreReadLock)
+        this._ignoreReadLocks.push(...ignoreReadLock.map(level => Connection.getIsolationLevel(level)))
     }
 
     public set connection(connection: MsSql.Transaction | MsSql.Connection) {
