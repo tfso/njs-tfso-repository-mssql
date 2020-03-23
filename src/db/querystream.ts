@@ -12,11 +12,40 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
     private _connection: MsSql.Connection;
     private _transaction: MsSql.Transaction;
 
-    constructor(connection?: MsSql.Connection | MsSql.Transaction) {
+    private _ignoreReadLocks: Array<MsSql.IIsolationLevel> = []
+
+    constructor(connection?: MsSql.Connection | MsSql.Transaction, ignoreReadLock?: Array<MsSql.IIsolationLevel>) 
+    constructor(ignoreReadLock?: Array<MsSql.IIsolationLevel>) 
+    constructor() {
         super();
+
+        let connection: MsSql.Connection | MsSql.Transaction,
+            ignoreReadLock = []
+
+        switch(arguments.length) {
+            case 2:
+                if(arguments[0] instanceof MsSql.Connection || arguments[0] instanceof MsSql.Transaction)
+                    connection = arguments[0]
+
+                if(Array.isArray(arguments[1])) 
+                    ignoreReadLock = arguments[1]
+
+                break
+
+            default:
+                if(arguments[0] instanceof MsSql.Connection || arguments[0] instanceof MsSql.Transaction)
+                    connection = arguments[0]
+
+                if(Array.isArray(arguments[0]))
+                    ignoreReadLock = arguments[0]
+
+                break
+        }
 
         if (connection != null)
             this.connection = connection;
+
+        this._ignoreReadLocks.push(...ignoreReadLock)
     }
 
     public set connection(connection: MsSql.Transaction | MsSql.Connection) {
@@ -30,7 +59,14 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
     }
 
     protected get readLock(): boolean {
-        return this._transaction ? true : false;
+        if(this._transaction) {
+            if(this._ignoreReadLocks && this._ignoreReadLocks.includes(this._transaction.isolationLevel))
+                return false
+
+            return true
+        }
+        
+        return false
     }
 
     protected input(name: string, value: any): void
@@ -151,8 +187,6 @@ export abstract class QueryStream<TEntity> extends Query<TEntity> {
                         error = ex;
                     }
                 });
-
-
 
                 request.on('error', (err) => {
                     error = err;

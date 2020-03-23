@@ -139,18 +139,11 @@ describe("When using QueryRecordSet for MsSql queries", () => {
             });
     })
 
-    it("should handle multiple thens", (done) => {
-        myQuery
-            .then((model) => {
-                return model.length > 0 ? model.records[0] : null;
-            })
-            .then((model) => {
-                if (model != null && model.no == 1)
-                    done();
-                else
-                    done(new Error('Expected a model with property "no" equal 1'));
-            })
-            .catch(done);
+    it("should handle multiple thens", async () => {
+        let result = await myQuery
+
+        if( (result.length == 1 && result.records[0].no == 1) == false)
+            throw new Error('Expected a model with property "no" equal 1')
     });
 
     it("should fail for driver/query problems", (done) => {

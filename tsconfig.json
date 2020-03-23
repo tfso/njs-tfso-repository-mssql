@@ -6,6 +6,7 @@
         "newLine": "LF",
         //"noImplicitAny": true,
         "removeComments": false,
+        "skipLibCheck": true,
         "sourceMap": true,
         "inlineSources": true,
         "noLib": false,

@@ -53,7 +53,7 @@ export default class Connection {
         this._transaction = null;
 
         if (this._connection && this._connection.connected)
-            this._connection.close();
+            await this._connection.close();
     }
 
     public async rollbackTransaction(): Promise<void> {       
@@ -183,7 +183,7 @@ export default class Connection {
                     }
                 }
                 else {
-                    this._connectionString
+                    Promise.resolve(this._connectionString)
                         .then((connectionString) => {
                             try {
                                 return this.getConnection(connectionString)
@@ -214,6 +214,9 @@ export default class Connection {
                             }
                         }, (err) => {
                             reject(err);
+                        })
+                        .catch(err => {
+                            reject(err)
                         })
                 }
             }
